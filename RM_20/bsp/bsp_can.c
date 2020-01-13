@@ -15,6 +15,7 @@
 #include "bsp_motor.h"
 #include "chassis_task.h"
 #include "status_task.h"
+#include "slip_task.h"
 uint32_t j;
 
 CAN_TxHeaderTypeDef Tx1Message;
@@ -62,6 +63,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				status.uplift_status[i] = 1;
 			}
 			break;
+			case CAN_3508_SL_ID:
+			{
+				moto_slip.msg_cnt++ <=50 ?
+				get_moto_offset(&moto_slip, &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_slip, &hcan1,CAN_Rx_data);
+			}	
 			default: {}break;
 		};
 	}

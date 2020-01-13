@@ -31,7 +31,8 @@ typedef enum
   CAN_3508_M3_ID       = 0x203,
   CAN_3508_M4_ID       = 0x204,
   CAN_3508_UP1_ID      = 0x205,
-  CAN_3508_UP2_ID      = 0x206, 
+  CAN_3508_UP2_ID      = 0x206,
+	CAN_3508_SL_ID			 = 0x207,
 
 	CAN_CHASSIS_ALL_ID   = 0x200,
   CAN_GIMBAL_ALL_ID    = 0x1ff,

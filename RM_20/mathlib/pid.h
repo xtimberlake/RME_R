@@ -113,5 +113,10 @@ __PID_EXT pid_t pid_yaw_spd;
 //陀螺仪角速度做外环
 __PID_EXT pid_t	pid_pit_gyro;
 __PID_EXT pid_t pid_yaw_gyro;
+
+//取弹横移电机
+__PID_EXT pid_t	pid_slip_spd;
+__PID_EXT pid_t pid_slip_pos;
+
 #endif
 
