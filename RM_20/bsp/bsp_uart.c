@@ -202,6 +202,7 @@ void relay_decoding(void)
 {
 	relay.dis1 = relay_buf[0]<<8|relay_buf[1];
 	relay.dis2 = relay_buf[2]<<8|relay_buf[3];
+	
 	if(relay_buf[4]==0x00)	{relay.bullet_left = 0;relay.bullet_right = 0;}
 	else if(relay_buf[4]==0x40){relay.bullet_left = 0;relay.bullet_right = 1;}
 	else if(relay_buf[4]==0x80){relay.bullet_left = 1;relay.bullet_right = 0;}

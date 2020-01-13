@@ -56,35 +56,67 @@ void magazine_executed()
 	else	magazine_off();
 }
 
+void interact_executed()
+{
+	if(pump.interact_ctrl_mode ==ON_MODE)	interact_on();
+	else	interact_off();
+}
+
+/** 
+  
+  * @brief  以下是电气串口信息
+  * @date Jan,12 2020
+  *	@author 
+  *
+  */
+
 void camera_executed()
 {
 	if(electrical.camera_ctrl_mode ==ON_MODE)	camera_on();
 	else	camera_off();
 }
 
+void laser_executed()
+{
+	if(electrical.laser_ctrl_mode ==ON_MODE)	laser_on();
+	else	laser_off();
+}
+
+
+
 void pump_init()
 {
 	//程序初始化完成后发送接受气阀信息标志位
-	relay.status[0]=0XAA;
-	relay.status[1]=0XBB;
-	HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 2, 0xff);
-	
 	
 	pump.help_ctrl_mode = OFF_MODE;
 	pump.bracket_ctrl_mode = OFF_MODE;
 	pump.magazine_ctrl_mode = OFF_MODE;
 	pump.throw_ctrl_mode = OFF_MODE;
-	pump.bracket_ctrl_mode = OFF_MODE;
+	pump.rotate_ctrl_mode = OFF_MODE;
 	pump.press_ctrl_mode = OFF_MODE;
-	
+	pump.interact_ctrl_mode = OFF_MODE;
 	
 	electrical.camera_ctrl_mode = OFF_MODE;
 	electrical.camera_ctrl_mode = OFF_MODE;
-	throw_executed();
-	bracket_executed();
-	press_executed();
+	
 	help_executed();
+	bracket_executed();
+	magazine_executed();
+	throw_executed();
+	press_executed();
+	rotate_executed();
+	interact_executed();
+	
 	camera_executed();
+	laser_executed();
+	
+	relay.status[0]=0XAA;
+	relay.status[1]=0XBB;
+	relay.status[2]=relay.gas_status;
+	relay.status[3]=relay.electrical_status;
+	
+	HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 4, 0x1f);
+	
 }
 
 

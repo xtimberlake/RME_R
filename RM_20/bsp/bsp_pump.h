@@ -32,10 +32,18 @@
 #define rotate_off()   relay.gas_status &= ~(0x01 <<4)
 #define magazine_on()	 relay.gas_status |=  (0x01 <<5)
 #define magazine_off() relay.gas_status &= ~(0x01 <<5)
-#define exb_on()			 relay.gas_status |=  (0x01 <<6)
-#define exb_off() 		 relay.gas_status &= ~(0x01 <<6)
-#define camera_on()		 relay.gas_status |=  (0x01 <<7)
-#define camera_off()	 relay.gas_status &= ~(0x01 <<7)
+#define interact_on()	 relay.gas_status |=  (0x01 <<6)
+#define interact_off() relay.gas_status &= ~(0x01 <<6)
+#define backup_on()		 relay.gas_status |=  (0x01 <<7)
+#define backup_off()	 relay.gas_status &= ~(0x01 <<7)
+
+
+#define camera_on()		 relay.electrical_status |=  (0x01 <<0)
+#define camera_off()	 relay.electrical_status &= ~(0x01 <<0)
+#define laser_on() 		 relay.electrical_status |=  (0x01 <<1)
+#define laser_off() 	 relay.electrical_status &= ~(0x01 <<1)
+
+
 
 typedef enum
 {
@@ -68,9 +76,12 @@ __BSP_PUMP_EXT void throw_executed(void);
 __BSP_PUMP_EXT void help_executed(void);
 __BSP_PUMP_EXT void bracket_executed(void);
 __BSP_PUMP_EXT void press_executed(void);
+__BSP_PUMP_EXT void interact_executed(void);
 __BSP_PUMP_EXT void pump_init(void);
 __BSP_PUMP_EXT void camera_executed(void);
 __BSP_PUMP_EXT void magazine_executed(void);
+__BSP_PUMP_EXT void laser_executed(void);
+
 __BSP_PUMP_EXT pump_t pump;
 __BSP_PUMP_EXT electrical_t electrical;
 #endif

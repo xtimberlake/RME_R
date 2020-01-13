@@ -31,25 +31,31 @@ extern TaskHandle_t can_msg_send_task_t;
 void relay_task(void const *argu)
 {
 	uint32_t relay_wake_time = osKernelSysTick();
+	
+	relay.status[0]=0XAA; //进入任务后标志位一直不会改变
+	relay.status[1]=0XBB;
+	
 	for(;;)
 	{
 		help_executed();
-		press_executed();
-		throw_executed();
 		bracket_executed();
-		rotate_executed();	
 		magazine_executed();
+		throw_executed();
+		press_executed();
+		rotate_executed();
+		interact_executed();
 		
 		camera_executed();
+		laser_executed();
 		
-		relay.status[0]=relay.gas_status;
-		relay.status[1]=relay.electrical_status;
+		relay.status[2]=relay.gas_status;
+		relay.status[3]=relay.electrical_status;
 		
 		taskENTER_CRITICAL();
-		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 2, 10);
+		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 2, 0x10);
 		taskEXIT_CRITICAL();
 		osDelayUntil(&relay_wake_time, RELAY_TASK_PERIOD);
-		
+
 	}
 
 }
