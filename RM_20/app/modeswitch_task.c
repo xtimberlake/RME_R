@@ -20,9 +20,11 @@
 #include "data_processing.h"
 #include "bsp_motor.h"
 #include "judge_send_task.h"
+#include "slip_task.h"
 
 extern osTimerId chassis_timer_id;
 extern osTimerId uplift_timer_id;
+extern osTimerId slip_timer_id;
 extern osTimerId judge_sendTimer_id;
 
 #define PIT_PWM_DOWN_LIMTI	800
@@ -68,6 +70,7 @@ void mode_switch_task(void const *argu)
 
 	osTimerStart(chassis_timer_id, CHASSIS_PERIOD);
 	osTimerStart(uplift_timer_id, UPLIFT_PERIOD);
+	osTimerStart(slip_timer_id, SLIP_PERIOD);
 	osTimerStart(judge_sendTimer_id, JUDGE_SEND_PERIOD);
   uint32_t mode_wake_time = osKernelSysTick();
 	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);

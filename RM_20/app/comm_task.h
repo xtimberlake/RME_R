@@ -24,13 +24,14 @@ typedef struct
   int16_t chassis_cur[4];
   int16_t uplift_cur[2];
   int16_t gimbal_cur[2];
+	int16_t slip_cur;
 } motor_current_t;
 
 void send_chassis_Judgement_power_message(uint16_t chassis_power,uint16_t chassis_power_buffer);
 
 void can_msg_send_task(void const *argu);
 void send_chassis_motor_ctrl_message(int16_t chassis_cur[]);
-void send_uplift_motor_ctrl_message(int16_t uplift_cur[]);
+void send_uplift_motor_ctrl_message(int16_t uplift_cur[], int16_t slip_cur);
 void send_gimbal_motor_ctrl_message(int16_t gimbal_cur[]);
 extern motor_current_t motor_cur;
 #endif

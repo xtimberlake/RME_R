@@ -34,6 +34,7 @@
 #include "status_task.h"
 #include "gimbal_task.h"
 #include "uplift_task.h"
+#include "slip_task.h"
 #include "relay_task.h"
 #include "judge_unpack_task.h"
 #include "judge_send_task.h"
@@ -65,6 +66,7 @@ osThreadId relay_task_t;
 
 osTimerId chassis_timer_id;
 osTimerId uplift_timer_id;
+osTimerId	slip_timer_id;
 
 TaskHandle_t judge_unpack_task_t;
 osTimerId judge_sendTimer_id;
@@ -140,6 +142,9 @@ void MX_FREERTOS_Init(void) {
 
    osTimerDef(upliftTimer, uplift_task);
   uplift_timer_id = osTimerCreate(osTimer(upliftTimer), osTimerPeriodic, NULL);
+	
+	 osTimerDef(sliptTimer, slip_task);
+  slip_timer_id = osTimerCreate(osTimer(sliptTimer), osTimerPeriodic, NULL);
 	
 	
 		osTimerDef(judge_sendTimer, judge_send_task);

@@ -22,6 +22,7 @@
 #include "comm_task.h"
 #define CHASSIS_CAN   hcan1
 #define UPLIFT_CAN    hcan1
+#define SLIP_CAN			hcan1
 #define GIMBAL_CAN    hcan2
 /* CAN send and receive ID */
 typedef enum
@@ -60,7 +61,7 @@ extern uint8_t Rx1Data[8];
 void can_device_init(void);
 void my_can_filter_init_recv_all(void);
 
-void send_uplift_cur(int16_t up1_iq, int16_t up2_iq);
+void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq);
 void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4);
 void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq);
 

@@ -27,7 +27,8 @@ void can_msg_send_task(void const *argu)
   {
 		event = osSignalWait(UPLIFT_MOTOR_MSG_SEND | \
 													GIMBAL_MOTOR_MSG_SEND|	\
-													CHASSIS_MOTOR_MSG_SEND, osWaitForever);
+													CHASSIS_MOTOR_MSG_SEND  \
+																								, osWaitForever);
 		
 		if (event.status == osEventSignal)
     {
@@ -39,7 +40,7 @@ void can_msg_send_task(void const *argu)
       {
 //        can_time_ms = HAL_GetTick() - can_time_last;
 //        can_time_last = HAL_GetTick();
-        send_uplift_motor_ctrl_message(motor_cur.uplift_cur);
+        send_uplift_motor_ctrl_message(motor_cur.uplift_cur,motor_cur.slip_cur);
       }
 			if (event.value.signals & GIMBAL_MOTOR_MSG_SEND)
       {
@@ -62,11 +63,11 @@ void send_chassis_motor_ctrl_message(int16_t chassis_cur[])
                    chassis_cur[2], chassis_cur[3]);
 }
 
-void send_uplift_motor_ctrl_message(int16_t uplift_cur[])
+void send_uplift_motor_ctrl_message(int16_t uplift_cur[], int16_t slip_cur)
 {
   /* 0: uplift1 motor current
      1: uplift2 motor current*/
-	  send_uplift_cur(uplift_cur[0], uplift_cur[1]);
+	  send_uplift_cur(uplift_cur[0], uplift_cur[1],slip_cur);
 }
 
 void send_gimbal_motor_ctrl_message(int16_t gimbal_cur[])

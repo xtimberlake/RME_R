@@ -143,7 +143,7 @@ void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
   * @param  3508 motor current
   */
 
-void send_uplift_cur(int16_t up1_iq, int16_t up2_iq)
+void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq)
 {
 	uint8_t FreeTxNum = 0;  
 	
@@ -156,8 +156,8 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq)
 	uplift_can_tx_data.CAN_Tx_data[1] = up1_iq;
 	uplift_can_tx_data.CAN_Tx_data[2] = up2_iq >> 8;
 	uplift_can_tx_data.CAN_Tx_data[3] = up2_iq;
-	uplift_can_tx_data.CAN_Tx_data[4] = 0;
-	uplift_can_tx_data.CAN_Tx_data[5] = 0;
+	uplift_can_tx_data.CAN_Tx_data[4] = sl3_iq >> 8;
+	uplift_can_tx_data.CAN_Tx_data[5] = sl3_iq;
 	uplift_can_tx_data.CAN_Tx_data[6] = 0;
 	uplift_can_tx_data.CAN_Tx_data[7] = 0;
 	
@@ -170,6 +170,8 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq)
 	
 	HAL_CAN_AddTxMessage(&UPLIFT_CAN, &Tx1Message,uplift_can_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
 }
+
+
 
 
 /**
