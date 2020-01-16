@@ -35,6 +35,7 @@
 #include "gimbal_task.h"
 #include "uplift_task.h"
 #include "slip_task.h"
+#include "rotate_task.h"
 #include "relay_task.h"
 #include "judge_unpack_task.h"
 #include "judge_send_task.h"
@@ -67,6 +68,7 @@ osThreadId relay_task_t;
 osTimerId chassis_timer_id;
 osTimerId uplift_timer_id;
 osTimerId	slip_timer_id;
+osTimerId	rotate_timer_id;
 
 TaskHandle_t judge_unpack_task_t;
 osTimerId judge_sendTimer_id;
@@ -146,6 +148,8 @@ void MX_FREERTOS_Init(void) {
 	 osTimerDef(sliptTimer, slip_task);
   slip_timer_id = osTimerCreate(osTimer(sliptTimer), osTimerPeriodic, NULL);
 	
+		osTimerDef(rotateTimer, rotate_task);
+  rotate_timer_id = osTimerCreate(osTimer(rotateTimer), osTimerPeriodic, NULL);
 	
 		osTimerDef(judge_sendTimer, judge_send_task);
   judge_sendTimer_id = osTimerCreate(osTimer(judge_sendTimer), osTimerPeriodic, NULL);
@@ -184,8 +188,8 @@ void MX_FREERTOS_Init(void) {
 	 osThreadDef(modeTask, mode_switch_task, osPriorityNormal, 0, 512);
 	mode_sw_task_t = osThreadCreate(osThread(modeTask), NULL);
 
-//	 osThreadDef(debugTask, debug_task, osPriorityLow, 0, 256);
-//	debug_task_t = osThreadCreate(osThread(debugTask), NULL);
+	 osThreadDef(debugTask, debug_task, osPriorityLow, 0, 256);
+	debug_task_t = osThreadCreate(osThread(debugTask), NULL);
 
 	 osThreadDef(statusTask, status_task, osPriorityLow, 0, 512);
 	status_task_t = osThreadCreate(osThread(statusTask), NULL);

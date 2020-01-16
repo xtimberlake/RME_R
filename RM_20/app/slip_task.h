@@ -37,6 +37,7 @@ typedef struct
 	float						dist_fdb;	//横移机构距离反馈值
 	float						dist_offset;//动态补偿
 	int16_t					spd_ref;
+	int16_t 				last_speed_rpm; 
 	int16_t 				left_limit;
 	int16_t					right_limit;
 	

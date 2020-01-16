@@ -12,6 +12,7 @@
 #include "modeswitch_task.h"
 #include "chassis_task.h"
 #include "uplift_task.h"
+#include "rotate_task.h"
 #include "cmsis_os.h"
 #include "remote_msg.h"
 #include "bsp_can.h"
@@ -25,7 +26,9 @@
 extern osTimerId chassis_timer_id;
 extern osTimerId uplift_timer_id;
 extern osTimerId slip_timer_id;
+extern osTimerId rotate_timer_id;
 extern osTimerId judge_sendTimer_id;
+
 
 #define PIT_PWM_DOWN_LIMTI	800
 #define PIT_PWM_UP_LIMIT 		1650
@@ -71,6 +74,7 @@ void mode_switch_task(void const *argu)
 	osTimerStart(chassis_timer_id, CHASSIS_PERIOD);
 	osTimerStart(uplift_timer_id, UPLIFT_PERIOD);
 	osTimerStart(slip_timer_id, SLIP_PERIOD);
+	osTimerStart(rotate_timer_id,ROTATE_PERIOD);
 	osTimerStart(judge_sendTimer_id, JUDGE_SEND_PERIOD);
   uint32_t mode_wake_time = osKernelSysTick();
 	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);
@@ -140,6 +144,7 @@ void get_main_ctrl_mode(void)
 	
 void safety_mode_handle(void)
 {
+	slip.ctrl_mode = SLIP_STOP;
 	chassis.ctrl_mode = CHASSIS_STOP;
 	uplift.ctrl_mode = UPLIFT_STOP;
 	climb.jdq = 0;
@@ -154,6 +159,7 @@ void safety_mode_handle(void)
 //遥控底盘移动模式下对遥控器的操作处理，对各个机构切换状态
 void rc_move_handle(void)
 {	
+	slip.ctrl_mode = SLIP_ADJUST;   //横移电机可微调
 	uplift.ctrl_mode = UPLIFT_ADJUST;					//抬升机构可微调，ch5
 	chassis.ctrl_mode = CHASSIS_REMOTE_NORMAL;//底盘正常速度行走模式ch1.ch2,ch3
 	//ch4打到最下卡扣，救援机构闭合，其他模式缩回
@@ -186,6 +192,7 @@ void rc_bullet_handle(void)
 //ch5向上打 一次 进行取弹的下一次操作
 //向下打一次 复位到取弹的最初始状态
 	static uint8_t rc5_flag ;
+	slip.ctrl_mode = SLIP_AUTO;
 	uplift.ctrl_mode = UPLIFT_AUTO;		//抬升机构不微调，自动到达指定位置
 	chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;	//底盘慢速移动
 //	ch4打到最下卡扣，取第二排/岛上子弹模式

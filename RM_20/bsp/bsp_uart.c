@@ -142,7 +142,8 @@ void uart_receive_handler(UART_HandleTypeDef *huart)
 		}
 		if (huart == &IMU_HUART)
 		{
-			imu_decoding(imu_buf,IMU_BUFLEN);
+		//	imu_decoding(imu_buf,IMU_BUFLEN);
+			//мсбщрг╫с©з
 			uart_rx_idle_callback(huart);
 
 		}	

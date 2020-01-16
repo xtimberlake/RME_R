@@ -35,6 +35,7 @@
 #include "chassis_task.h"
 #include "status_task.h"
 #include "uplift_task.h"
+#include "slip_task.h"
 #include "gimbal_task.h"
 
 #include "bsp_pump.h"
@@ -188,6 +189,7 @@ void BSP_init()
 	can_device_init();
 	chassis_init();
 	uplift_init();
+	slip_init();
 	uart_init();
 	judge_unpack_task_Init();
 	pump_init();

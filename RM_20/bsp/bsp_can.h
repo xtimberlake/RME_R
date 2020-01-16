@@ -39,6 +39,8 @@ typedef enum
   CAN_GIMBAL_ALL_ID    = 0x1ff,
 	
 	//can2
+	CAN_ROTATE_M1_ID     = 0x201,
+	CAN_ROTATE_M2_ID     = 0x202,
 	CAN_GM3510_YAW_ID 	 = 0x205,
 	CAN_GM3510_PIT_ID 	 = 0x206,
 } can_msg_id_e;
@@ -53,6 +55,7 @@ typedef struct
 __BSP_CAN_EXT CAN_SendMsg chassis_can_tx_data;
 __BSP_CAN_EXT CAN_SendMsg uplift_can_tx_data;
 __BSP_CAN_EXT CAN_SendMsg gimbal_tx_data;
+__BSP_CAN_EXT CAN_SendMsg rotate_tx_data;
 __BSP_CAN_EXT CAN_SendMsg relay_tx_data;
 
 extern uint8_t Rx1Data[8];
@@ -64,5 +67,6 @@ void my_can_filter_init_recv_all(void);
 void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq);
 void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4);
 void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq);
+void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq);
 
 #endif

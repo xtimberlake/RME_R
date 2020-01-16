@@ -67,6 +67,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			{
 				moto_slip.msg_cnt++ <=50 ?
 				get_moto_offset(&moto_slip, &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_slip, &hcan1,CAN_Rx_data);
+				status.slip_status = 1;
 			}	
 			default: {}break;
 		};
@@ -76,6 +77,19 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&Rx2Message, CAN_Rx_data);
 		switch (Rx2Message.StdId)
 		{
+			case CAN_ROTATE_M1_ID:
+			case CAN_ROTATE_M2_ID:	
+			{
+				static uint8_t n;
+				n = Rx2Message.StdId - 0x201 ;
+				moto_rotate[n].msg_cnt++ <= 50 ?
+				get_moto_offset(&moto_rotate[n], &hcan2,CAN_Rx_data) : encoder_data_handler(&moto_rotate[n], &hcan2,CAN_Rx_data);
+				moto_rotate[n].speed_rpm = moto_rotate[n].total_ecd - moto_rotate[n].last_total_ecd;//速度解算
+				moto_rotate[n].last_total_ecd = moto_rotate[n].total_ecd;
+				status.rotate_status[n] = 1;
+			}				
+			break;
+			
 
 			case CAN_GM3510_PIT_ID:
 			{
@@ -206,7 +220,35 @@ void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq)
 	HAL_CAN_AddTxMessage(&GIMBAL_CAN, &Tx2Message,gimbal_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
 }
 
-
+void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq)
+{
+	
+	uint8_t FreeTxNum = 0;  
+	
+	Tx2Message.StdId = 0x200;
+	Tx2Message.IDE 	 = CAN_ID_STD;
+	Tx2Message.RTR   = CAN_RTR_DATA;
+  Tx2Message.DLC   = 0x08;
+	
+	gimbal_tx_data.CAN_Tx_data[0] = rt1_iq >> 8;
+	gimbal_tx_data.CAN_Tx_data[1] = rt1_iq;
+	gimbal_tx_data.CAN_Tx_data[2] = rt2_iq >> 8;
+	gimbal_tx_data.CAN_Tx_data[3] = rt2_iq ;
+	gimbal_tx_data.CAN_Tx_data[4] = 0;
+	gimbal_tx_data.CAN_Tx_data[5] = 0;
+	gimbal_tx_data.CAN_Tx_data[6] = 0;
+	gimbal_tx_data.CAN_Tx_data[7] = 0;
+	
+	//查询发送邮箱是否为空
+	FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan2);  
+	while(FreeTxNum == 0) 
+	{  
+    FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan2);  
+  }
+	
+	HAL_CAN_AddTxMessage(&GIMBAL_CAN, &Tx2Message,gimbal_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
+	
+}
 /*********************************CAN底层初始化**************************************/
 /**
   * @brief   can filter initialization

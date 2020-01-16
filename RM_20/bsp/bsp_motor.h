@@ -49,6 +49,7 @@ __BSP_MOTOR_EXT moto_measure_t moto_uplift[2];//Ì§Éý
 __BSP_MOTOR_EXT moto_measure_t moto_pit ;
 __BSP_MOTOR_EXT moto_measure_t moto_yaw ;
 __BSP_MOTOR_EXT moto_measure_t moto_slip;
+__BSP_MOTOR_EXT moto_measure_t moto_rotate[2]; 
 
 __BSP_MOTOR_EXT void encoder_data_handler(moto_measure_t* ptr, CAN_HandleTypeDef* hcan,uint8_t CAN_Rx_data[8]);
 __BSP_MOTOR_EXT void get_moto_offset(moto_measure_t* ptr, CAN_HandleTypeDef* hcan,uint8_t CAN_Rx_data[8]);

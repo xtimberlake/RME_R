@@ -16,6 +16,7 @@
 #define GIMBAL_MOTOR_MSG_SEND   ( 1 << 2 )
 #define UPLIFT_MOTOR_MSG_SEND   ( 1 << 3 )
 #define CHASSIS_MOTOR_MSG_SEND  ( 1 << 4 )
+#define ROTATE_MOTOR_MSG_SEND		( 1 << 5 )
 
 /* motor current parameter structure */
 typedef struct
@@ -25,6 +26,7 @@ typedef struct
   int16_t uplift_cur[2];
   int16_t gimbal_cur[2];
 	int16_t slip_cur;
+	int16_t rotate_cur[2];
 } motor_current_t;
 
 void send_chassis_Judgement_power_message(uint16_t chassis_power,uint16_t chassis_power_buffer);

@@ -11,6 +11,8 @@ typedef struct
 	uint8_t gimbal_status[3];
 	uint8_t climb_status[2];	
 	uint8_t uplift_status[3];
+	uint8_t slip_status;
+	uint8_t rotate_status[2];
 } status_t;
 
 extern status_t status;

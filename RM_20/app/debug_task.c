@@ -17,6 +17,10 @@
 #include "chassis_task.h"
 #include "pid.h"
 #include "gimbal_task.h"
+#include "bsp_motor.h"
+#include "bsp_can.h"
+#include "slip_task.h"
+
 //函数说明：MiniBalance上位机通过串口打印数据波形
 //附加说明：直接在主函数中调用此函数（注意延时减少打印量）
 //函数无返回 
@@ -41,7 +45,14 @@ void DataWave(UART_HandleTypeDef* huart)
 //		DataScope_Get_Channel_Data(pid_chassis_angle.get[0], 6 );
 //		DataScope_Get_Channel_Data(pid_chassis_angle.set[0], 7 );
 	
-		CK.Send_Count = DataScope_Data_Generate(7);//串口需要发送的数据个数
+		
+		DataScope_Get_Channel_Data(slip.spd_ref,1);
+		DataScope_Get_Channel_Data(moto_slip.speed_rpm,2);
+		DataScope_Get_Channel_Data(slip.dist_ref,3);
+		DataScope_Get_Channel_Data(slip.dist_fdb,4);
+		
+		
+		CK.Send_Count = DataScope_Data_Generate(4);//串口需要发送的数据个数
 		if(huart == &huart1)
 		{
 			for( CK.DataCnt = 0 ; CK.DataCnt < CK.Send_Count; CK.DataCnt++) 
@@ -58,13 +69,21 @@ void DataWave(UART_HandleTypeDef* huart)
 			USART6->DR = CK.DataScope_OutPut_Buffer[CK.DataCnt]; 
 			}
 		}
+		else if(huart == &huart2)
+		{
+			for( CK.DataCnt = 0 ; CK.DataCnt < CK.Send_Count; CK.DataCnt++) 
+			{
+			while((USART2->SR&0X40)==0);  
+			USART2->DR = CK.DataScope_OutPut_Buffer[CK.DataCnt]; 
+			}
+		}
 }
 
 void debug_task(void const *argu)
 {
 	for(;;)
 	{
-		DataWave(&huart6);
+		DataWave(&huart2);
 		osDelay(20);
 	}
 }

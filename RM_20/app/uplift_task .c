@@ -73,14 +73,21 @@ void uplift_task(void const *argu)
 				uplift.mode = UPLIFT_CALIBRA;
 				break;
 			case UPLIFT_CALIBRA:
+				
+			{
 				if(uplift.down_limit1==0)		//接触到下限后给补偿值
 					uplift.current[0] =  pid_calc(&pid_calibre_spd[0],moto_uplift[0].speed_rpm,-400);
 				else
 					uplift.current[0] =0;
+				
+				
 				if(uplift.down_limit2==0)		//接触到下限后给补偿值				
 				uplift.current[1] =  pid_calc(&pid_calibre_spd[1],moto_uplift[1].speed_rpm,400);	
 				else
-					uplift.current[1] =0;					
+					uplift.current[1] =0;		
+
+
+			}	
 				break;
 		}
 	}
@@ -103,14 +110,14 @@ void uplift_task(void const *argu)
 			
 			case UPLIFT_ADJUST:
 			{
-				if((uplift.down_limit1==1||uplift.down_limit2==1)&&rc.ch5>0)	rc.ch5=0;
+				//if((uplift.down_limit1==1||uplift.down_limit2==1)&&rc.ch5>0)	rc.ch5=0;
 			
 				uplift.height_ref[0] -= 0.00056*rc.ch5;
 				uplift.height_ref[1] -= 0.00056*rc.ch5;
-				if(uplift.height_ref[0]>uplift.height_up_limit)
-					uplift.height_ref[0] = uplift.height_up_limit;
-				if(uplift.height_ref[1]>uplift.height_up_limit)
-					uplift.height_ref[1] = uplift.height_up_limit;
+//				if(uplift.height_ref[0]>uplift.height_up_limit)
+//					uplift.height_ref[0] = uplift.height_up_limit;
+//				if(uplift.height_ref[1]>uplift.height_up_limit)
+//					uplift.height_ref[1] = uplift.height_up_limit;
 				pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]);
 				pid_calc(&pid_uplift_height[1],uplift.height_fdb[1],uplift.height_ref[1]);	
 				uplift.spd_ref[0] =  pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]);
@@ -121,13 +128,13 @@ void uplift_task(void const *argu)
 				uplift_test++;
 				uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]);
 				uplift.current[1] = pid_calc(&pid_uplift_spd[1],moto_uplift[1].speed_rpm,uplift.spd_ref[1]);
-				if(uplift.down_limit1==1||uplift.down_limit2==1)	
-				{
-					pid_uplift_spd[0].iout = 0;
-					pid_uplift_spd[0].pos_out = 0;
-					pid_uplift_spd[1].iout = 0;
-					pid_uplift_spd[1].pos_out = 0;			
-				}			
+//				if(uplift.down_limit1==1||uplift.down_limit2==1)	
+//				{
+//					pid_uplift_spd[0].iout = 0;
+//					pid_uplift_spd[0].pos_out = 0;
+//					pid_uplift_spd[1].iout = 0;
+//					pid_uplift_spd[1].pos_out = 0;			
+//				}			
 			}
 			break;
 				
