@@ -72,7 +72,8 @@ void USER_UART_FUNCTION(UART_HandleTypeDef *huart)
 {		
 	if(huart->Instance== USART1 )
 	{
-		MAIN_get_data(DMA.receive_buff1);																									//MAIN数据解算	
+		if(DMA.receive_buff1[0]==0XAA && DMA.receive_buff1[1]==0XBB)
+		{MAIN_get_data(DMA.receive_buff1);}																								//MAIN数据解算	
 		memset(DMA.receive_buff1,0,DMA_recive_buff_LEN);                                  //清零接收缓冲区
 		HAL_UART_Receive_DMA(huart, (uint8_t*)DMA.receive_buff1, DMA_recive_buff_LEN);    //重启开始DMA传输
 	}
@@ -100,8 +101,8 @@ void USER_UART_FUNCTION(UART_HandleTypeDef *huart)
 
 void MAIN_get_data(uint8_t *receive_buff)
 {
-	main_data.gas_status=receive_buff[0];
-	main_data.electrical_status=receive_buff[1];
+	main_data.gas_status=receive_buff[2];
+	main_data.electrical_status=receive_buff[3];
 }
 
 

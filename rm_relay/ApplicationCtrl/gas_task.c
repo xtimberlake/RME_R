@@ -18,6 +18,7 @@ void gas_task(void const * argument)
 			
 	for (i = 0; i < 8; i++)
 	{
+		gas_status = main_data.gas_status;
 		if (gas_status & (1<<i))
 		{
 			gas_on(i);

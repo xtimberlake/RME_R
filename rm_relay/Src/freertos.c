@@ -26,17 +26,22 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
+#include "stm32f1xx_hal.h"
 #include "gas_task.h"
+#include "view_task.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+volatile int yaw_value=1480;
+volatile int pitch_value=1150;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,6 +55,7 @@
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId gas_task_idHandle;
+osThreadId view_task_idHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -58,6 +64,7 @@ osThreadId gas_task_idHandle;
 
 void StartDefaultTask(void const * argument);
 extern void gas_task(void const * argument);
+extern void view_task(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -100,6 +107,10 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(gas_task_id, gas_task, osPriorityHigh, 0, 128);
   gas_task_idHandle = osThreadCreate(osThread(gas_task_id), NULL);
 
+  /* definition and creation of view_task_id */
+  osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 256);
+  view_task_idHandle = osThreadCreate(osThread(view_task_id), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 	
@@ -119,12 +130,14 @@ void StartDefaultTask(void const * argument)
     
     
     
+    
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
+    __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,yaw_value);
+		__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2,pitch_value);
   }
   /* USER CODE END StartDefaultTask */
 }

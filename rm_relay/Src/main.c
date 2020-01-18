@@ -23,6 +23,7 @@
 #include "cmsis_os.h"
 #include "can.h"
 #include "dma.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -100,6 +101,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_CAN_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	BSP_init();
   /* USER CODE END 2 */
@@ -166,6 +168,8 @@ void BSP_init()
 	user_uart_init();
 	my_can_filter_init_recv_all();
 	can_device_init();
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
 }
 /* USER CODE END 4 */
 

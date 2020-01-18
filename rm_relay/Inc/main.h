@@ -72,6 +72,10 @@ void Error_Handler(void);
 #define AIR_MAGAZINE_GPIO_Port GPIOB
 #define CAMERA_Pin GPIO_PIN_13
 #define CAMERA_GPIO_Port GPIOB
+#define YAW_PWM_Pin GPIO_PIN_15
+#define YAW_PWM_GPIO_Port GPIOA
+#define PIT_PWM_Pin GPIO_PIN_3
+#define PIT_PWM_GPIO_Port GPIOB
 #define LED_Pin GPIO_PIN_9
 #define LED_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
