@@ -108,7 +108,7 @@ void MX_FREERTOS_Init(void) {
   gas_task_idHandle = osThreadCreate(osThread(gas_task_id), NULL);
 
   /* definition and creation of view_task_id */
-  osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 256);
+  osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 128);
   view_task_idHandle = osThreadCreate(osThread(view_task_id), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -136,8 +136,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,yaw_value);
-		__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2,pitch_value);
+
   }
   /* USER CODE END StartDefaultTask */
 }

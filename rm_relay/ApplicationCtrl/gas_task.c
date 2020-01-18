@@ -5,6 +5,8 @@
 #include "stm32f1xx_hal.h"
 #include "gpio.h"
 #include "cmsis_os.h"
+#include "tim.h"
+#include "view_task.h"
 
 main_data_t main_data;
 air_cylinder_t air_cylinder;
@@ -25,8 +27,10 @@ void gas_task(void const * argument)
 		}
 		else gas_off(i);
 	}
-		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-    osDelay(500);
+	
+	  __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,view.yaw_ref);
+		__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2,view.pit_ref);
+
   }
   
 }

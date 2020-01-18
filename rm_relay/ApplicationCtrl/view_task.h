@@ -4,6 +4,7 @@
 
 #include "bsp_uart.h"
 
+
 #define INIT_VIEW_YAW 				1480
 #define INIT_VIEW_PITCH				1150
 #define SCREEN_VIEW_YAW				2100
@@ -13,7 +14,14 @@
 #define VIEW_PITCH_UP_LIMIT		1600
 #define VIEW_PITCH_DN_LIMIT		800
 
+typedef struct
+{
+	int16_t yaw_ref;
+	int16_t pit_ref;
 
+}view_t;	
+
+extern view_t view;
 
 
 #endif

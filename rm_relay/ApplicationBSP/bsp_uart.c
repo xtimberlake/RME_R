@@ -10,6 +10,7 @@
   */
 #include "bsp_uart.h"
 #include "gas_task.h"
+#include "view_task.h"
 #include "bsp_TOF.h"
 
 dma_rec_t DMA;
@@ -103,6 +104,8 @@ void MAIN_get_data(uint8_t *receive_buff)
 {
 	main_data.gas_status=receive_buff[2];
 	main_data.electrical_status=receive_buff[3];
+	view.yaw_ref = (receive_buff[4] << 8)|receive_buff[5] ;
+	view.pit_ref = (receive_buff[6] << 8)|receive_buff[7] ;
 }
 
 
