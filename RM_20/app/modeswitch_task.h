@@ -27,7 +27,6 @@ typedef enum
   SAFETY_MODE,//保护模式
 	RC_MOVE_MODE,//遥控器底盘移动模式（抬升机构可微调）
 	RC_BULLET_MODE,//遥控器各组件测试模式
-	RC_CLIMB_MODE,//遥控器自动执行功能模式
 	KB_MODE,//键盘模式
 } engineer_mode_e;
 

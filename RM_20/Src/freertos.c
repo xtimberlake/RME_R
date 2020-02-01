@@ -215,10 +215,21 @@ void StartDefaultTask(void const * argument)
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
+	
+	//开启底盘和抬升机构的软件定时器任务
+
+	osTimerStart(chassis_timer_id, CHASSIS_PERIOD);
+	osTimerStart(uplift_timer_id, UPLIFT_PERIOD);
+	osTimerStart(slip_timer_id, SLIP_PERIOD);
+	osTimerStart(rotate_timer_id,ROTATE_PERIOD);
+	osTimerStart(judge_sendTimer_id, JUDGE_SEND_PERIOD);
+	
   /* Infinite loop */
-  for(;;)
+	 while(1)
   {
-    osDelay(100);
+		HAL_GPIO_TogglePin(LED_A_GPIO_Port,LED_A_Pin);
+		HAL_GPIO_TogglePin(LED_C_GPIO_Port,LED_C_Pin);
+    osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
 }

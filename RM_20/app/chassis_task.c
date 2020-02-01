@@ -57,7 +57,7 @@ void chassis_task(void const *argu)
 			chassis.vy = (float)rc.ch1*3;
 			chassis.vw = (float)rc.ch3*(-3);
 		}break;
-		case CHASSIS_KB_MANUAL:
+		case CHASSIS_KB:
 		{		
 			chassis_ramp();
 			chassis.vx = (float)(chassis_x_ramp.out);
@@ -72,8 +72,9 @@ void chassis_task(void const *argu)
 		break;
 		case CHASSIS_KB_NEAR: //激光测距方案贴资源岛行走
 		{
+			chassis_ramp();
 			chassis.vx = -pid_calc(&pid_chassis_near_x,(float)relay.dis1+(float)relay.dis2,chassis.dis_ref);//调距离
-			chassis.vy = chassis.target_vy;
+			chassis.vy = (float)(chassis_y_ramp.out);
 			chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
 		}
 		break;

@@ -6,6 +6,7 @@
 #include "cmsis_os.h"
 #include "string.h"
 #include "remote_msg.h"
+#include "math.h"
 
 
 #define slip_ratio (8192.0f)
@@ -15,13 +16,16 @@ extern TaskHandle_t can_msg_send_task_t;
 void slip_init()
 {
 		//横移的PID 
-		PID_struct_init(&pid_slip_spd, POSITION_PID, 15000, 3000,
-									15.0f,	0.00001f,	0.5f	);  
+		PID_struct_init(&pid_slip_spd, POSITION_PID, 7000, 3000,
+									15.0f,	0.001f,	0.5f	);  
 		
 		PID_struct_init(&pid_slip_pos, POSITION_PID, 15000, 3000,
-									950.0f,	0.0f,	0.0f	);  
+									400.0f,	0.001f,	0.0f	);  
  	
 		slip.mode = SLIP_UNKNOWN;
+		slip.dist_offset_left  = 0;
+		slip.dist_offset_right = 0;
+		slip.dist_offset			 = 0;
 
 //	uplift.height_up_limit = HEIGHT_UP_LIMIT;
 //	uplift.height_give = HEIGHT_GIVE;
@@ -39,7 +43,10 @@ void slip_init()
 
 void slip_task(void const *argu)
 {
+	
 	slip.dist_fdb =  moto_slip.total_ecd/slip_ratio  -  slip.dist_offset;
+	
+	slip_get_position_flag(); //获取当前总体位置
 	
 	if(slip.mode != SLIP_KNOWN && slip.ctrl_mode == SLIP_AUTO) //自动模式且未知状态下进行校准
 	{
@@ -53,17 +60,41 @@ void slip_task(void const *argu)
 			}break;
 			case SLIP_CALIBRA:
 			{
-				  slip.current = 800;
-				  static int handle_times=0;
-					handle_times++;
-					if(handle_times>30 && moto_slip.speed_rpm<100) //检测堵转
+					if(fabs(slip.dist_offset_left)<0.01) 	//左边校正未确定
 					{
-					 slip.dist_offset=moto_slip.total_ecd/slip_ratio;
-					 slip.dist_fdb =  moto_slip.total_ecd/slip_ratio  -  slip.dist_offset;
-					 slip.mode = SLIP_KNOWN; //进入已知状态
-					// slip.dist_ref = slip.dist_fdb ; //设置一次当前位置为目标值
-					 slip.dist_ref = -33.0 ; //中间位置
+						slip.current = -1000;
+						static int handle_lt_times=0;
+						handle_lt_times++;
+						if(handle_lt_times>30 && moto_slip.speed_rpm>-100) //检测堵转
+						{
+						 slip.dist_offset_left=moto_slip.total_ecd/slip_ratio; //获得左边校准数值
+						 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
+						}
+					
 					}
+					else if(fabs(slip.dist_offset_right)<0.01) //右边校正未确定
+					{
+						slip.current = 1000;
+						static int handle_rg_times=0;
+						handle_rg_times++;
+						if(handle_rg_times>30 && moto_slip.speed_rpm<100) //检测堵转
+						{
+						 slip.dist_offset_right=moto_slip.total_ecd/slip_ratio; //获得右边校准数值
+						 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
+						}
+					
+					}
+					else //校准成功
+					{
+						slip.dist_offset = (slip.dist_offset_left + slip.dist_offset_right)/2 ; //计算最终offset，零点为中间位置
+						slip.dist_fdb =  moto_slip.total_ecd/slip_ratio  -  slip.dist_offset;   //获得校准后的位置信息
+						slip.dist_ref =  slip.dist_fdb;
+						slip.dist_ref = 0;			//设置目标位置为中间
+						slip.mode = SLIP_KNOWN; //进入已知状态
+					
+					}
+									
+					
 			}break;
 			case SLIP_KNOWN:
 			{
@@ -79,18 +110,15 @@ void slip_task(void const *argu)
 	{
 		case SLIP_ADJUST: 
 					{
-						slip.dist_ref += 0.002*rc.ch4;  //调试位置环PID
+						slip.dist_ref -= 0.002*rc.ch4;  
 						slip.spd_ref = pid_calc(&pid_slip_pos,slip.dist_fdb,slip.dist_ref); //位置环
 						slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,slip.spd_ref); //速度环
-//						
-//						slip.spd_ref = 5*rc.ch4;  //调试位置环PID
-//						slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,slip.spd_ref); //速度环
 					
 					}break;
 		case SLIP_STOP:
 					{
-					slip.current = 0;
-					slip.dist_ref = slip.dist_fdb; //设置当前速度为目标速度
+						slip.current = 0;
+						slip.dist_ref = slip.dist_fdb; //设置当前位置为目标位置
 					} break;
 		case SLIP_AUTO:
 					{
@@ -108,8 +136,35 @@ void slip_task(void const *argu)
 	}
 }
 
-
+	
 	motor_cur.slip_cur = slip.current;
-	osSignalSet(can_msg_send_task_t, UPLIFT_MOTOR_MSG_SEND);
+	osSignalSet(can_msg_send_task_t, ROTATE_MOTOR_MSG_SEND); //发送至can2
 
+}
+
+void slip_get_position_flag()
+{
+	if(slip.mode != SLIP_KNOWN) slip.position_flag = UNCERTAIN ; //未校准处于未确定状态
+	else
+	{
+		//处于中间子弹位置
+		if (fabs((double)(slip.dist_fdb-slip.center_bullet_REF))<0.5) 
+		{
+			slip.position_flag = CENTER_BULLET_POS ;
+		}
+		else if (fabs((double)(slip.dist_fdb-slip.left_bullet_REF))<0.5)
+		{
+			slip.position_flag = LEFT_BULLET_POS ;
+		}
+		else if (fabs((double)(slip.dist_fdb-slip.right_bullet_REF))<0.5)
+		{
+			slip.position_flag = RIGHT_BULLET_POS ;
+		}
+		else
+		{
+			slip.position_flag = NEED_CALIBRATED ;
+		
+		}
+
+	}
 }

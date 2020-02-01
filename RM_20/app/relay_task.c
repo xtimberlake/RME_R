@@ -30,7 +30,10 @@ extern TaskHandle_t can_msg_send_task_t;
   */
 void relay_task(void const *argu)
 {
-	uint32_t relay_wake_time = osKernelSysTick();
+	//pump.magazine_ctrl_mode = OFF_MODE;uint32_t relay_wake_time = osKernelSysTick();
+	
+	relay.view_tx.yaw		= 1480;
+	relay.view_tx.pitch = 1150; //初始化图传角度
 	
 	relay.status[0]=0XAA; //进入任务后标志位一直不会改变
 	relay.status[1]=0XBB;
@@ -48,17 +51,26 @@ void relay_task(void const *argu)
 		camera_executed();
 		laser_executed();
 		
-		relay.status[2]=relay.gas_status;
-		relay.status[3]=relay.electrical_status;
+		relay.status[2] = relay.gas_status;
+		relay.status[3] = relay.electrical_status;
+		
+		relay.status[4] = relay.view_tx.yaw >> 8;
+		relay.status[5] = relay.view_tx.yaw;
+		relay.status[6] = relay.view_tx.pitch >> 8;
+		relay.status[7] = relay.view_tx.pitch;
+		
+		
 		
 		taskENTER_CRITICAL();
-		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 2, 0x10);
+		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 8, 0xff);
+		osDelay(10); //延时一段时间，让气阀板检测空闲
 		taskEXIT_CRITICAL();
-		osDelayUntil(&relay_wake_time, RELAY_TASK_PERIOD);
 
 	}
 
 }
+
+
 
 
 

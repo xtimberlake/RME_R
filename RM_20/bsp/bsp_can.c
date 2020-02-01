@@ -63,12 +63,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				status.uplift_status[i] = 1;
 			}
 			break;
-			case CAN_3508_SL_ID:
-			{
-				moto_slip.msg_cnt++ <=50 ?
-				get_moto_offset(&moto_slip, &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_slip, &hcan1,CAN_Rx_data);
-				status.slip_status = 1;
-			}	
+			
 			default: {}break;
 		};
 	}
@@ -89,7 +84,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				status.rotate_status[n] = 1;
 			}				
 			break;
-			
+			case CAN_3508_SL_ID:
+			{
+				moto_slip.msg_cnt++ <=50 ?
+				get_moto_offset(&moto_slip, &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_slip, &hcan1,CAN_Rx_data);
+				status.slip_status = 1;
+			}
+			break;
 
 			case CAN_GM3510_PIT_ID:
 			{
@@ -157,7 +158,7 @@ void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
   * @param  3508 motor current
   */
 
-void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq)
+void send_uplift_cur(int16_t up1_iq, int16_t up2_iq)
 {
 	uint8_t FreeTxNum = 0;  
 	
@@ -170,8 +171,8 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq)
 	uplift_can_tx_data.CAN_Tx_data[1] = up1_iq;
 	uplift_can_tx_data.CAN_Tx_data[2] = up2_iq >> 8;
 	uplift_can_tx_data.CAN_Tx_data[3] = up2_iq;
-	uplift_can_tx_data.CAN_Tx_data[4] = sl3_iq >> 8;
-	uplift_can_tx_data.CAN_Tx_data[5] = sl3_iq;
+	uplift_can_tx_data.CAN_Tx_data[4] = 0;
+	uplift_can_tx_data.CAN_Tx_data[5] = 0;
 	uplift_can_tx_data.CAN_Tx_data[6] = 0;
 	uplift_can_tx_data.CAN_Tx_data[7] = 0;
 	
@@ -185,7 +186,10 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq, int16_t sl3_iq)
 	HAL_CAN_AddTxMessage(&UPLIFT_CAN, &Tx1Message,uplift_can_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
 }
 
-
+/**
+  * @brief  send calculated current to motor
+  * @param  3508 motor current
+  */
 
 
 /**
@@ -220,7 +224,7 @@ void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq)
 	HAL_CAN_AddTxMessage(&GIMBAL_CAN, &Tx2Message,gimbal_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
 }
 
-void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq)
+void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq, int16_t sl_iq)
 {
 	
 	uint8_t FreeTxNum = 0;  
@@ -233,9 +237,9 @@ void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq)
 	gimbal_tx_data.CAN_Tx_data[0] = rt1_iq >> 8;
 	gimbal_tx_data.CAN_Tx_data[1] = rt1_iq;
 	gimbal_tx_data.CAN_Tx_data[2] = rt2_iq >> 8;
-	gimbal_tx_data.CAN_Tx_data[3] = rt2_iq ;
-	gimbal_tx_data.CAN_Tx_data[4] = 0;
-	gimbal_tx_data.CAN_Tx_data[5] = 0;
+	gimbal_tx_data.CAN_Tx_data[3] = rt2_iq;
+	gimbal_tx_data.CAN_Tx_data[4] = sl_iq  >> 8;
+	gimbal_tx_data.CAN_Tx_data[5] = sl_iq;
 	gimbal_tx_data.CAN_Tx_data[6] = 0;
 	gimbal_tx_data.CAN_Tx_data[7] = 0;
 	

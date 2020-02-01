@@ -21,11 +21,16 @@
 
 #define RELAY_TASK_PERIOD 5
 
-
+typedef struct
+{
+	int16_t yaw;
+	int16_t pitch; //初始化值
+}view_data;
 
 typedef struct
 {
-	uint8_t status[4];//串口发送气阀和电气状态 前两个字节表示数据帧头
+	view_data view_tx;
+	int8_t status[8];//串口发送气阀和电气状态 前两个字节表示数据帧头
 	uint8_t gas_status;//气阀控制位
 	uint8_t electrical_status; //电气控制位
 	uint16_t dis1;

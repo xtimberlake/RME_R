@@ -56,12 +56,12 @@ typedef struct
 {
   pump_mode_e  press_ctrl_mode;
   pump_mode_e  bracket_ctrl_mode;
-  pump_mode_e  throw_ctrl_mode;	//±§ÖùµÄÆø¶¯×¦
+  pump_mode_e  throw_ctrl_mode;	//µ¯Éäµ¯Ò©Ïä
 	pump_mode_e  help_ctrl_mode;
 	pump_mode_e  magazine_ctrl_mode;
 	pump_mode_e  rotate_ctrl_mode;
 	pump_mode_e  interact_ctrl_mode; //½»»¥Ä£¿é¿¨
-
+	
 } pump_t;
 
 typedef struct

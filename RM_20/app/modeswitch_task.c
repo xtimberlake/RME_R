@@ -45,6 +45,10 @@ extern osTimerId judge_sendTimer_id;
 
 float chassis_speed; //底盘速度选择 此定义在斜坡函数中会再次用到
 
+int speed_normal=4000;
+int speed_fast =8000;
+int speed_slow =2000;
+
 float servo_pit_pwm=1170;
 float servo_yaw_pwm=2080;
 //servo_yaw_pwm pwm值增大逆时针转 最左为500pwm，最右为2500
@@ -53,10 +57,7 @@ uint8_t rc_kb_X_flag=0;
 uint8_t rc_kb_R_flag=0;
 uint8_t rc_ch4_flag=0;
 
-#define SPEED_NORMAL	2800
-#define SPEED_LASER		1500
-#define SPEED_SLOW		800
-#define	SPEED_FAST		6000
+
 
 #define MOUSE_SPEED_SLOW		50
 #define MOUSE_SPEED_NORMAL	100
@@ -69,15 +70,9 @@ uint32_t climb_handle_cnt=0,climb_ready_step_flag=0;
 int speed_choose_x=1,speed_choose_y=1,speed_choose_w=1,speed_choose_m=1;
 void mode_switch_task(void const *argu)
 {
-	//开启底盘和抬升机构的软件定时器任务
 
-	osTimerStart(chassis_timer_id, CHASSIS_PERIOD);
-	osTimerStart(uplift_timer_id, UPLIFT_PERIOD);
-	osTimerStart(slip_timer_id, SLIP_PERIOD);
-	osTimerStart(rotate_timer_id,ROTATE_PERIOD);
-	osTimerStart(judge_sendTimer_id, JUDGE_SEND_PERIOD);
   uint32_t mode_wake_time = osKernelSysTick();
-	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);
+	
 	for(;;)
 	{
 		taskENTER_CRITICAL();
@@ -114,9 +109,7 @@ void get_main_ctrl_mode(void)
 				}break;
 				case RC_DN:
 				{
-					//遥控器登岛下岛测试模式
-					glb_ctrl_mode = RC_CLIMB_MODE;
-					rc_climb_handle();	
+				
 				}break;
 			}
 		}
@@ -133,8 +126,6 @@ void get_main_ctrl_mode(void)
 		//键盘模式
 			glb_ctrl_mode = KB_MODE;
 			kb_handle();
-			get_bullet_ctrl_mode();
-			climb_ctrl_mode();
 		}
 		break;
 		default:
@@ -144,17 +135,11 @@ void get_main_ctrl_mode(void)
 	
 void safety_mode_handle(void)
 {
-	slip.ctrl_mode = SLIP_STOP;
 	chassis.ctrl_mode = CHASSIS_STOP;
 	uplift.ctrl_mode = UPLIFT_STOP;
-	climb.jdq = 0;
-	climb.pwm = 800;
-	climb.jdq?HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_SET):
-	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);
-	TIM3->CCR3 = climb.pwm;
+	slip.ctrl_mode = SLIP_STOP;
+	rotate.ctrl_mode = ROTATE_SAFE_MODE;
 	
-	
-
 }
 //遥控底盘移动模式下对遥控器的操作处理，对各个机构切换状态
 void rc_move_handle(void)
@@ -193,7 +178,8 @@ void rc_bullet_handle(void)
 //向下打一次 复位到取弹的最初始状态
 	static uint8_t rc5_flag ;
 	slip.ctrl_mode = SLIP_AUTO;
-	uplift.ctrl_mode = UPLIFT_AUTO;		//抬升机构不微调，自动到达指定位置
+	uplift.ctrl_mode = UPLIFT_ADJUST; 
+//	uplift.ctrl_mode = UPLIFT_AUTO;		//抬升机构不微调，自动到达指定位置
 	chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;	//底盘慢速移动
 //	ch4打到最下卡扣，取第二排/岛上子弹模式
 //					中间，取第一排模式
@@ -235,18 +221,6 @@ void rc_bullet_handle(void)
 		//传输子弹时爪子收起
 		uplift.height_ref[0] = uplift.height_give;
 		uplift.height_ref[1] = uplift.height_give;
-		
-//		if(ABS(pid_uplift_height[0].err[0])<1.5f&&ABS(pid_uplift_height[1].err[0])<1.5f)			
-//		{
-			if(rc.ch5<-500)	
-			{
-				pump.magazine_ctrl_mode=ON_MODE;//开弹仓
-			}
-			if(rc.ch5>500)	
-			{
-				pump.magazine_ctrl_mode=OFF_MODE;//关弹仓
-			}		
-//		}
 	}	
 
 	//图传视角对屏幕，屏幕视角为取弹
@@ -256,35 +230,19 @@ void rc_bullet_handle(void)
 	TIM1->CCR4 = servo_pit_pwm;
 	electrical.camera_ctrl_mode = OFF_MODE;
 
-	//关闭涵道
-	climb.jdq = 0;
-	climb.pwm = 800;
-	climb.jdq?HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_SET):
-	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);
-	TIM3->CCR3 = climb.pwm;
-
 }
 
-//遥控上下岛模式下对遥控器的操作处理，对各个机构切换状态_YYQ
-void rc_climb_handle(void)
-{
-	
-	
-}
+
 
 //键盘模式下的操作处理，对各个机构切换状态
 void kb_handle(void)
 {
 	float mouse_speed;
-	uplift.ctrl_mode = UPLIFT_AUTO;
-	//chassis.ctrl_mode = CHASSIS_KB_MANUAL;	
 	
-	climb.jdq = 1;
-	climb.jdq?HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_SET):
-	HAL_GPIO_WritePin(TURBINE_JDQ_GPIO_Port,TURBINE_JDQ_Pin,GPIO_PIN_RESET);	
-	climb.pwm = 800;
-	
-	
+	//uplift.ctrl_mode = UPLIFT_AUTO;
+	uplift.ctrl_mode = UPLIFT_ADJUST; //抬升暂时未调试
+	chassis.ctrl_mode = CHASSIS_KB;	
+
 	if(rc.mouse.l)		//	视角	r正常 shift r取弹 ctrl r 登岛
 	{
 		//两轴云台归中
@@ -312,64 +270,31 @@ void kb_handle(void)
 			camera_flag = 1;
 		}
 	}	
-	if(rc.mouse.r)
+	if(rc.mouse.r) //未调试过
 	{
-//		servo_pit_pwm += 0.1*rc.mouse.y;
-//		servo_yaw_pwm += -0.1*rc.mouse.x;
-//		if(servo_pit_pwm>PIT_PWM_UP_LIMIT)	servo_pit_pwm = PIT_PWM_UP_LIMIT;
-//		if(servo_pit_pwm<PIT_PWM_DOWN_LIMTI)	servo_pit_pwm = PIT_PWM_DOWN_LIMTI;
-//		if(servo_yaw_pwm>YAW_PWM_LEFT_LIMIT)	servo_yaw_pwm = YAW_PWM_LEFT_LIMIT;
-//		if(servo_yaw_pwm<YAW_PWM_RIGHT_LIMIT)	servo_yaw_pwm = YAW_PWM_RIGHT_LIMIT;
+			//启动挪动鼠标移动云台操作
+			relay.view_tx.yaw 	-= 0.5*rc.mouse.x;
+			relay.view_tx.pitch	-= 0.3*rc.mouse.y;
+			if(relay.view_tx.yaw > 2200) relay.view_tx.yaw = 2200;
+		  if(relay.view_tx.yaw < 850) relay.view_tx.yaw = 850;
+			if(relay.view_tx.pitch > 1600) relay.view_tx.pitch = 1600;
+		  if(relay.view_tx.pitch < 800) relay.view_tx.pitch = 800;
+			//HAL_GPIO_TogglePin(LED_A_GPIO_Port,LED_A_Pin);g
+	}
+	else if(rc.kb.bit.G)
+	{
+			relay.view_tx.yaw 	= 1480;
+			relay.view_tx.pitch	= 1150;
 		
-		
-		
-		//启动挪动鼠标移动云台操作
+		//图传初始状态
 	}
-	else
-	{
-		//横向移动鼠标的机器移动操作
-	}
-//	TIM1->CCR3 = servo_yaw_pwm;
-//	TIM1->CCR4 = servo_pit_pwm;
-
-//	if(camera_mode==CAMERA_NORMAL_MODE){speed_choose_x = 1;speed_choose_y = 1;speed_choose_w = 1;speed_choose_m = 1;}
-//	else if(camera_mode==CAMERA_BULLET_MODE){speed_choose_x = 1;speed_choose_y = -1;speed_choose_w = 1;speed_choose_m = 1;}
-//	else if(camera_mode==CAMERA_CLIMB_MODE){speed_choose_x = -1;speed_choose_y = 1;speed_choose_w = -1;speed_choose_m = -1;}
-
-	if(rc.kb.bit.CTRL)	{chassis_speed = SPEED_LASER;mouse_speed = MOUSE_SPEED_SLOW;}
-	else if(rc.kb.bit.SHIFT)	{chassis_speed = SPEED_FAST;mouse_speed = MOUSE_SPEED_FAST;}
-	else 								{chassis_speed = SPEED_NORMAL;mouse_speed = MOUSE_SPEED_NORMAL;}
-
-	if(rc.kb.bit.G)
-	{
-		chassis.ctrl_mode = CHASSIS_KB_NEAR;
-		chassis_speed = SPEED_SLOW;
-	}
-	else if(rc.mouse.r)
-	{
-		chassis.ctrl_mode=CHASSIS_KB_LIMIT_TOUCH;
-		chassis_speed = SPEED_LASER;
-	}
-	else 
-	{
-		chassis.ctrl_mode = CHASSIS_KB_MANUAL;
-	}
-	
-	
-	
-	if(rc.kb.bit.W)				chassis.target_vx = 	 chassis_speed		*speed_choose_x;
-	else if(rc.kb.bit.S)	chassis.target_vx = -1*chassis_speed		*speed_choose_x;
-	else									chassis.target_vx =    												 0;
-	if(rc.kb.bit.A)				chassis.target_vy = -1*chassis_speed		*speed_choose_y;
-	else if(rc.kb.bit.D)	chassis.target_vy = 	 chassis_speed		*speed_choose_y;
-	else									chassis.target_vy =    												 0;
-	if(rc.kb.bit.Q)				chassis.target_vw = 	 chassis_speed		*speed_choose_w;
-	else if(rc.kb.bit.E)	chassis.target_vw = -1*chassis_speed		*speed_choose_w;
-	else									chassis.target_vw =    												 0;
-	
-	
 
 
+	if(rc.kb.bit.CTRL)	{chassis_speed = 1800; mouse_speed = MOUSE_SPEED_SLOW;}
+	else if(rc.kb.bit.SHIFT)	{chassis_speed = 8200; mouse_speed = MOUSE_SPEED_FAST;}
+	else 								{chassis_speed = 3800; mouse_speed = MOUSE_SPEED_NORMAL;}
+
+	
 	if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
 	else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
 
@@ -392,115 +317,9 @@ void kb_handle(void)
 		rc_kb_X_flag = 0;
 		bullet.step_flag = 1;
 	}
-	//补弹   c抬到给弹高度 shift c 开弹仓 ctrl c 关弹仓
-	if(rc.kb.bit.C&&rc.kb.bit.CTRL==0&&rc.kb.bit.SHIFT==0)			
-	{
-		//传输子弹时爪子收起
-		uplift.height_ref[0] = uplift.height_give;
-		uplift.height_ref[1] = uplift.height_give;
-	}
-	if(rc.kb.bit.B&&rc.kb.bit.CTRL==0)
-	{
-		pump.magazine_ctrl_mode=ON_MODE;//岛上开弹仓	
-	}
-	if(rc.kb.bit.B&&rc.kb.bit.CTRL==1)
-	{
-		pump.magazine_ctrl_mode=OFF_MODE;//岛上关弹仓	
-	}
-	if(rc.kb.bit.C&&rc.kb.bit.CTRL==0&&rc.kb.bit.SHIFT==1)
-	{
-		if(ABS(uplift.height_give-uplift.height_fdb[0])<1.5f&&ABS(uplift.height_give-uplift.height_fdb[1])<1.5f)			
-				pump.magazine_ctrl_mode=ON_MODE;//开弹仓	
-	}
-	if(rc.kb.bit.C&&rc.kb.bit.CTRL==1&&rc.kb.bit.SHIFT==0)
-	{
-				pump.magazine_ctrl_mode=OFF_MODE;//关弹仓
-	}
-		
-	if(rc.sw2==RC_MI||rc.sw2==RC_UP)	climb.up_or_down = 1;//上岛
-	if(rc.sw2==RC_DN) climb.up_or_down = 0;//下岛
 
-	if(rc.kb.bit.R&&rc_kb_R_flag==0)	//上下岛的下一步   r
-	{
-		rc_kb_R_flag = 1;
-	}
-	if(rc.kb.bit.R==0&&rc_kb_R_flag)
-	{
-		rc_kb_R_flag = 0;
-		climb.step_flag = 1;
-	}
 
-	//救援	shift v夹 ctrl v松
-	if(rc.kb.bit.SHIFT==0&&rc.kb.bit.V&&rc.kb.bit.CTRL==0)	
-	{
-			servo_pit_pwm = PIT_PWM_HELP;
-			servo_yaw_pwm = YAW_PWM_HELP;
-		
-			electrical.camera_ctrl_mode = ON_MODE;
-			camera_mode = CAMERA_HELP_MODE;
 
-		//开救援视角
-	}
-	if(rc.kb.bit.SHIFT&&rc.kb.bit.V&&rc.kb.bit.CTRL==0)	
-	{
-		pump.help_ctrl_mode=ON_MODE;//开救援
-	}
-	if(rc.kb.bit.CTRL&&rc.kb.bit.V&&rc.kb.bit.SHIFT==0)	
-	{
-		pump.help_ctrl_mode=OFF_MODE;//关救援
-	}		
-		
-	if(rc.kb.bit.SHIFT==0&&rc.kb.bit.F&&rc.kb.bit.CTRL==0)	
-	{
-		slope_climb_pwm.inital = 800;
-		slope_processing(&slope_climb_pwm,1600,25);
-//		climb.pwm = slope_climb_pwm.value;
-		climb.pwm = 1600;
-		//开涵道
-	}
-	else if(rc.kb.bit.SHIFT&&rc.kb.bit.F&&rc.kb.bit.CTRL==0)	
-	{
-		slope_climb_pwm.inital = 800;
-		slope_processing(&slope_climb_pwm,2500,25);
-//		climb.pwm = slope_climb_pwm.value;
-		climb.pwm = 2200;
-		//开涵道
-	}
-	else if(rc.kb.bit.CTRL&&rc.kb.bit.SHIFT==0&&rc.kb.bit.F)	
-	{
-	//	pump.claw_ctrl_mode = OFF_MODE;
-		climb.pwm = 800;
-		slope_climb_pwm.value = 800;
-
-	}	
-	else if(rc.kb.bit.CTRL==0&&rc.kb.bit.SHIFT==0&&rc.kb.bit.F)
-	{
-		//pump.claw_ctrl_mode = ON_MODE;
-		climb.pwm = 800;
-		slope_climb_pwm.value = 800;
-	}
-	TIM3->CCR3 = climb.pwm;
-//	if(rc.kb.bit.SHIFT&&rc.kb.bit.R&&rc.kb.bit.CTRL==0)	
-//	{
-//		uplift.height_ref[0] = uplift.height_climb_up_zhuzi;
-//		uplift.height_ref[1] = uplift.height_climb_up_zhuzi;		
-//	}
-//	else if(rc.kb.bit.CTRL&&rc.kb.bit.R&&rc.kb.bit.SHIFT==0)	
-//	{
-//		uplift.height_ref[0] = uplift.height_climb_retract;
-//		uplift.height_ref[1] = uplift.height_climb_retract;
-//	}	
-//	else if(rc.kb.bit.R&&rc.kb.bit.CTRL==0&&rc.kb.bit.SHIFT==0)
-//	{
-//		uplift.height_ref[0] = uplift.height_climb_on_top;
-//		uplift.height_ref[1] = uplift.height_climb_on_top;
-//	}
-	
-	if(uplift.height_ref[0] == HEIGHT_CLIMB_RETRACT)
-			climb.flag = 1;		
-	else
-			climb.flag = 0;		
-		
 }
 
 void get_global_last_mode(void)

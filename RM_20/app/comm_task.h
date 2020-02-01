@@ -33,7 +33,9 @@ void send_chassis_Judgement_power_message(uint16_t chassis_power,uint16_t chassi
 
 void can_msg_send_task(void const *argu);
 void send_chassis_motor_ctrl_message(int16_t chassis_cur[]);
-void send_uplift_motor_ctrl_message(int16_t uplift_cur[], int16_t slip_cur);
+void send_uplift_motor_ctrl_message(int16_t uplift_cur[]);
 void send_gimbal_motor_ctrl_message(int16_t gimbal_cur[]);
+void send_rotate_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur);
+
 extern motor_current_t motor_cur;
 #endif

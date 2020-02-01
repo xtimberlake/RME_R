@@ -77,41 +77,41 @@ void chassis_ramp()
 	}
 	if(rc.kb.bit.A)
 	{
-	  ramp_calc(&chassis_w_ramp,1.0f,100.0f, chassis_speed, 0.0f);			
+	  ramp_calc(&chassis_w_ramp,1.0f,180.0f, chassis_speed, 0.0f);			
 	}
 	else if(rc.kb.bit.D)
 	{
-	  ramp_calc(&chassis_w_ramp,1.0f,-100.0f, 0.0f, -chassis_speed);			
+	  ramp_calc(&chassis_w_ramp,1.0f,-180.0f, 0.0f, -chassis_speed);			
 	}
 	else
 	{
 		if(chassis_w_ramp.out > 0)
 		{
-			ramp_calc(&chassis_w_ramp,1.0f,-100.0f, chassis_speed, 0.0f);			
+			ramp_calc(&chassis_w_ramp,1.0f,-150.0f, chassis_speed, 0.0f);			
 		}
 		else if(chassis_w_ramp.out < 0)
 		{
-			ramp_calc(&chassis_w_ramp,1.0f,100.0f, 0.0f, -chassis_speed);	
+			ramp_calc(&chassis_w_ramp,1.0f,150.0f, 0.0f, -chassis_speed);	
 		}
 	}
 	
-		if(rc.mouse.x>2)
-	{
-	  ramp_calc(&chassis_mouse_w_ramp,0.2f,100.0f, chassis_speed, 0.0f);			
-	}
-	else if(rc.mouse.x<-2)
-	{
-	  ramp_calc(&chassis_mouse_w_ramp,0.2f,-100.0f, 0.0f, -chassis_speed);			
-	}
-	else
-	{
-		if(chassis_mouse_w_ramp.out > 0)
-		{
-			ramp_calc(&chassis_mouse_w_ramp,0.5f,-10.0f, chassis_speed, 0.0f);			
-		}
-		else if(chassis_mouse_w_ramp.out < 0)
-		{
-			ramp_calc(&chassis_mouse_w_ramp,0.5f,10.0f, 0.0f, -chassis_speed);	
-		}
-	}	
+//		if(rc.mouse.x>2)
+//	{
+//	  ramp_calc(&chassis_mouse_w_ramp,0.2f,100.0f, chassis_speed, 0.0f);			
+//	}
+//	else if(rc.mouse.x<-2)
+//	{
+//	  ramp_calc(&chassis_mouse_w_ramp,0.2f,-100.0f, 0.0f, -chassis_speed);			
+//	}
+//	else
+//	{
+//		if(chassis_mouse_w_ramp.out > 0)
+//		{
+//			ramp_calc(&chassis_mouse_w_ramp,0.5f,-10.0f, chassis_speed, 0.0f);			
+//		}
+//		else if(chassis_mouse_w_ramp.out < 0)
+//		{
+//			ramp_calc(&chassis_mouse_w_ramp,0.5f,10.0f, 0.0f, -chassis_speed);	
+//		}
+//	}	
 }

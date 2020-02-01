@@ -10,17 +10,27 @@
 
 #define ROTATE_PERIOD 10
 
+typedef enum
+{
+	ROTATE_SAFE_MODE,
+	ROTATE_AUTO_MODE,
+	ROTATE_ADJUST_MODE,
+	
+}rotate_mode_t;
+
 typedef struct
 {	
-  int16_t         current[2];
+	rotate_mode_t   ctrl_mode;
+  int16_t         current[2]; //赋予两个电机相同的电流值
 	int16_t					spd_ref; //只使用一边的电机反馈
-	uint32_t 				up_limit;
-	uint32_t 				down_limit;
-	float						angle_ref;	
-	float						angle_fdb;	
+	int32_t 				up_limit;
+	int32_t 				down_limit;
+	int32_t 				bullet_angle_ref;
+	int32_t 				loose_angle_ref;
+	int32_t  				init_angle_ref;
+	int32_t					angle_ref;	
+	int32_t					angle_fdb;	
 
-	float bullet_angle_ref;
-	float back_angle_ref;
 
 }rotate_t;
 

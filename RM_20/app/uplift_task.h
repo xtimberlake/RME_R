@@ -72,6 +72,9 @@ typedef struct
 	
 	uint8_t  				offset_flag;//自动模式下校准抬升机构，其他模式可不理
 
+	float height_get_bullet_REF;
+	float height_give_hero_REF;
+	
 	float height_up_limit;
 	float height_give;
 	float height_get;

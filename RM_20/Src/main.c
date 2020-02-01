@@ -193,6 +193,7 @@ void BSP_init()
 	uart_init();
 	judge_unpack_task_Init();
 	pump_init();
+
 	bullet.loosetime = 30; //ÈÓ×Óµ¯Ê±¼ä
 	
 }

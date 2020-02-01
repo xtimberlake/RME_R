@@ -20,6 +20,7 @@
 #include "bsp_motor.h"
 #include "bsp_can.h"
 #include "slip_task.h"
+#include "uplift_task.h"
 
 //函数说明：MiniBalance上位机通过串口打印数据波形
 //附加说明：直接在主函数中调用此函数（注意延时减少打印量）
@@ -45,14 +46,14 @@ void DataWave(UART_HandleTypeDef* huart)
 //		DataScope_Get_Channel_Data(pid_chassis_angle.get[0], 6 );
 //		DataScope_Get_Channel_Data(pid_chassis_angle.set[0], 7 );
 	
+	
+		DataScope_Get_Channel_Data(uplift.spd_ref[0],1);
+		DataScope_Get_Channel_Data(moto_uplift[0].speed_rpm,2);
+//		DataScope_Get_Channel_Data(slip.dist_ref,3);
+//		DataScope_Get_Channel_Data(slip.dist_fdb,4);
 		
-		DataScope_Get_Channel_Data(slip.spd_ref,1);
-		DataScope_Get_Channel_Data(moto_slip.speed_rpm,2);
-		DataScope_Get_Channel_Data(slip.dist_ref,3);
-		DataScope_Get_Channel_Data(slip.dist_fdb,4);
 		
-		
-		CK.Send_Count = DataScope_Data_Generate(4);//串口需要发送的数据个数
+		CK.Send_Count = DataScope_Data_Generate(2);//串口需要发送的数据个数
 		if(huart == &huart1)
 		{
 			for( CK.DataCnt = 0 ; CK.DataCnt < CK.Send_Count; CK.DataCnt++) 
