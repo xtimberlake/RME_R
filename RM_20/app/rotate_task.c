@@ -9,6 +9,7 @@
 #include "remote_msg.h"
 #include "math.h"
 
+#include "arm_math.h"
 
 extern TaskHandle_t can_msg_send_task_t;
 void rotate_init()
