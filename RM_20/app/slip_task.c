@@ -7,6 +7,7 @@
 #include "string.h"
 #include "remote_msg.h"
 #include "math.h"
+#include "keyboard_handle.h"
 
 
 #define slip_ratio (8192.0f)
@@ -129,6 +130,7 @@ void slip_task(void const *argu)
 					}break;
 		case SLIP_KEYBOARD:
 					{
+						keyboard_handle();
 					
 					}break;			
 	
@@ -144,7 +146,7 @@ void slip_task(void const *argu)
 
 void slip_get_position_flag()
 {
-	if(slip.mode != SLIP_KNOWN) slip.position_flag = UNCERTAIN ; //未校准处于未确定状态
+	if(slip.mode != SLIP_KNOWN) {slip.position_flag = NEED_CALIBRATED ;slip.mode = SLIP_UNKNOWN;} //未校准处于未确定状态
 	else
 	{
 		//处于中间子弹位置
@@ -162,7 +164,7 @@ void slip_get_position_flag()
 		}
 		else
 		{
-			slip.position_flag = NEED_CALIBRATED ;
+			slip.position_flag = UNCERTAIN ;
 		
 		}
 

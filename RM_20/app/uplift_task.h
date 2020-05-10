@@ -48,12 +48,19 @@ typedef enum
 	UPLIFT_ADJUST,		//微调
 	UPLIFT_AUTO,			
 	UPLIFT_STOP,
+	UPLIFT_KEYBORAD,
 } uplift_ctrl_mode_e;//抬升机构
 
+typedef enum
+{
+	READY_HEIGHT,
+	BELOW_HEIGHT,
+} uplift_position_flag_e;//抬升机构位置标志
 typedef struct
 {
   uplift_ctrl_mode_e   ctrl_mode;
   uplift_ctrl_mode_e   last_ctrl_mode;
+	uplift_position_flag_e position_flag;
 	
   uplift_mode_e   mode;	
   int16_t         current[2];

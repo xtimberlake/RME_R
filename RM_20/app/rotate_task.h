@@ -18,6 +18,15 @@ typedef enum
 	
 }rotate_mode_t;
 
+typedef enum
+{
+	ROTATE_BULLET_POS_FLAG,
+	ROTATE_LOOSE_POS_FLAG,
+	ROTATE_INIT_POS_FLAG,
+	ROTATE_OTHERS_POS_FLAG,
+	
+}rotate_position_flag_e;
+
 typedef struct
 {	
 	rotate_mode_t   ctrl_mode;
@@ -30,7 +39,7 @@ typedef struct
 	int32_t  				init_angle_ref;
 	int32_t					angle_ref;	
 	int32_t					angle_fdb;	
-
+	rotate_position_flag_e position_flag;
 
 }rotate_t;
 

@@ -7,6 +7,8 @@
 #include "comm_task.h"
 #include "string.h"
 #include "remote_msg.h"
+#include "math.h"
+
 
 extern TaskHandle_t can_msg_send_task_t;
 void rotate_init()
@@ -59,4 +61,26 @@ void rotate_task(void const *argu)
 	
 	memcpy(motor_cur.rotate_cur, rotate.current, sizeof(rotate.current));
 	osSignalSet(can_msg_send_task_t, ROTATE_MOTOR_MSG_SEND);
+}
+
+void rotate_get_position_flag()
+{
+
+		if (fabs((double)(rotate.angle_fdb-rotate.bullet_angle_ref))<0.5) 
+		{
+			rotate.position_flag = ROTATE_BULLET_POS_FLAG ;
+		}
+		else if (fabs((double)(rotate.angle_fdb-rotate.loose_angle_ref))<0.5)
+		{
+			rotate.position_flag = ROTATE_LOOSE_POS_FLAG ;
+		}
+		else if (fabs((double)(rotate.angle_fdb-rotate.init_angle_ref))<0.5)
+		{
+			rotate.position_flag = ROTATE_INIT_POS_FLAG ;
+		}
+		else
+		{
+			rotate.position_flag = ROTATE_OTHERS_POS_FLAG ;
+		}
+
 }

@@ -103,9 +103,9 @@ void get_main_ctrl_mode(void)
 				case RC_MI:
 				{
 					//遥控取弹給弹测试模式
-					glb_ctrl_mode = RC_BULLET_MODE;
-					rc_bullet_handle();
-					get_bullet_ctrl_mode();
+					glb_ctrl_mode = RC_BULLET_MODE; //设置全局取弹模式
+					//rc_bullet_handle();  //取弹遥控调试函数
+					//get_bullet_ctrl_mode(); //取弹回调函数
 				}break;
 				case RC_DN:
 				{

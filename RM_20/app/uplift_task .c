@@ -135,6 +135,18 @@ void uplift_task(void const *argu)
 			uplift.current[0] = 0;	
 			uplift.current[1] = 0;
 				
+			}
+			case UPLIFT_KEYBORAD:
+			{
+				//高度限位
+					if(uplift.height_ref[0] > uplift.height_up_limit) 
+					uplift.height_ref[0] = uplift.height_up_limit;
+					if(uplift.height_ref[0] <= 0) //最低位置是0
+					uplift.height_ref[0] = 0;
+					
+					uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]); //高度环
+					uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
+					uplift.current[1] = -uplift.current[0]; //电机相同电流输出值
 			
 			}
 			break;
