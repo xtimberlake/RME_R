@@ -103,22 +103,43 @@ void judge_unpack_task(void const *argu)
     
   }
 }
+/*
+	简要：裁判系统数据包预解码，分步骤校验帧头，将所有数据存入protocol_packet[]中，校验CRC16
+	
+	附帧头详细定义：
 
+-----------------------------------------------
+域       | 偏移位置 |大小   | 描述             |
+-----------------------------------------------
+SOF      |   0      | 1     | 数据帧起始：0xA5 |
+-----------------------------------------------
+data_len |   1      | 2     | data长度         |
+-----------------------------------------------
+seq      |   3      | 1     | 包序号           |
+-----------------------------------------------
+CRC8     |   4      | 1     | 帧头CRC8校验     |
+-----------------------------------------------
+
+	parameter in [1] : 一帧队列数据包
+	包括：队列、帧头、数据长度、数组数据、解码步骤、队列数据存入数组的索引号
+
+	parameter in [2] ：正确sof 0XA5
+*/
 void unpack_fifo_data(unpack_data_t *p_obj, uint8_t sof)
 {
   uint8_t byte = 0;
   
-  while ( fifo_used_count(p_obj->data_fifo) )
+  while ( fifo_used_count(p_obj->data_fifo) ) //用循环将队列的数据全部依次读出，每次1 byte
   {
-    byte = fifo_s_get(p_obj->data_fifo);
+    byte = fifo_s_get(p_obj->data_fifo); //出队（1 byte）
     switch(p_obj->unpack_step)
     {
-      case STEP_HEADER_SOF:
+      case STEP_HEADER_SOF: //第一步：确定0xA5
       {
         if(byte == sof)
         {
           p_obj->unpack_step = STEP_LENGTH_LOW;
-          p_obj->protocol_packet[p_obj->index++] = byte;
+          p_obj->protocol_packet[p_obj->index++] = byte; //存入协议包
         }
         else
         {
@@ -126,19 +147,19 @@ void unpack_fifo_data(unpack_data_t *p_obj, uint8_t sof)
         }
       }break;
       
-      case STEP_LENGTH_LOW:
+      case STEP_LENGTH_LOW: //第二步：低八位data_length
       {
         p_obj->data_len = byte;
-        p_obj->protocol_packet[p_obj->index++] = byte;
+        p_obj->protocol_packet[p_obj->index++] = byte; 
         p_obj->unpack_step = STEP_LENGTH_HIGH;
       }break;
       
-      case STEP_LENGTH_HIGH:
+      case STEP_LENGTH_HIGH: //第三步：高八位data_length
       {
         p_obj->data_len |= (byte << 8);
-        p_obj->protocol_packet[p_obj->index++] = byte;
+        p_obj->protocol_packet[p_obj->index++] = byte; //存入协议包
 
-        if(p_obj->data_len < (PROTOCAL_FRAME_MAX_SIZE - HEADER_LEN - CRC_LEN))
+        if(p_obj->data_len < (PROTOCAL_FRAME_MAX_SIZE - HEADER_LEN - CRC_LEN)) //正确的数据长度应该小于128-5-2=121，校验长度是否出错
         {
           p_obj->unpack_step = STEP_FRAME_SEQ;
         }
@@ -149,19 +170,19 @@ void unpack_fifo_data(unpack_data_t *p_obj, uint8_t sof)
         }
       }break;
     
-      case STEP_FRAME_SEQ:
+      case STEP_FRAME_SEQ: //第四步：读取包序号
       {
         p_obj->protocol_packet[p_obj->index++] = byte;
         p_obj->unpack_step = STEP_HEADER_CRC8;
       }break;
 
-      case STEP_HEADER_CRC8:
+      case STEP_HEADER_CRC8: //第五步：校验帧头CRC8
       {
         p_obj->protocol_packet[p_obj->index++] = byte;
 
-        if (p_obj->index == HEADER_LEN)
+        if (p_obj->index == HEADER_LEN) 
         {
-          if ( verify_crc8_check_sum(p_obj->protocol_packet, HEADER_LEN) )
+          if ( verify_crc8_check_sum(p_obj->protocol_packet, HEADER_LEN) ) //验证帧头CRC8，第二参数为帧头长度5
           {
             p_obj->unpack_step = STEP_DATA_CRC16;
           }
@@ -173,25 +194,25 @@ void unpack_fifo_data(unpack_data_t *p_obj, uint8_t sof)
         }
       }break;  
 
-      case STEP_DATA_CRC16:
+      case STEP_DATA_CRC16: //第六步：校验CRC16
       {
         if (p_obj->index < (HEADER_LEN + CMD_LEN + p_obj->data_len + CRC_LEN))
         {
-           p_obj->protocol_packet[p_obj->index++] = byte;  
+           p_obj->protocol_packet[p_obj->index++] = byte;   //接收后面所有的字节数据，存入协议包中
         }
         if (p_obj->index >= (HEADER_LEN + CMD_LEN + p_obj->data_len + CRC_LEN))
         {
-          p_obj->unpack_step = STEP_HEADER_SOF;
+          p_obj->unpack_step = STEP_HEADER_SOF; //完成后，将步骤和指针索引初始化
           p_obj->index = 0;
 
-          if ( verify_crc16_check_sum(p_obj->protocol_packet, HEADER_LEN + CMD_LEN + p_obj->data_len + CRC_LEN) )
+          if ( verify_crc16_check_sum(p_obj->protocol_packet, HEADER_LEN + CMD_LEN + p_obj->data_len + CRC_LEN) ) //CRC16验证数据
           {
             if (sof == UP_REG_ID)
             {
             }
             else  //DN_REG_ID
             {
-              judgement_data_handler(p_obj->protocol_packet);
+              judgement_data_handler(p_obj->protocol_packet); //进行信息选择读取，参数就是最大为128字节的数据包
             }
           }
         }
@@ -199,7 +220,7 @@ void unpack_fifo_data(unpack_data_t *p_obj, uint8_t sof)
 
       default:
       {
-        p_obj->unpack_step = STEP_HEADER_SOF;
+        p_obj->unpack_step = STEP_HEADER_SOF; //解码完成或中途出错，回到第一步步骤
         p_obj->index = 0;
       }break;
     }

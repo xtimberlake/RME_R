@@ -32,7 +32,6 @@
 #include "string.h"
 
 
-
 /* data send (forward) */
 /* data receive */
 receive_judge_t judge_recv_mesg;
@@ -59,89 +58,127 @@ void judgement_data_handler(uint8_t *p_frame)
     case GAME_STATE_INFO_ID:
 		{
       memcpy(&judge_recv_mesg.game_information, data_addr, data_length);
+			//比赛类型、当前比赛阶段、当前剩余时间(s)
 		}
     break;
 		
     case GAME_RESULT_ID:
 		{
       memcpy(&judge_recv_mesg.game_result_data, data_addr, data_length);
+			//0平局，1红方胜利，2蓝方胜利
 		}
 		break;
 		
-		case  GAME_ROBOT_LIVE_ID:
+		case  GAME_ROBOT_HP_ID:
 		{
-      memcpy(&judge_recv_mesg.robot_survivors_data, data_addr, data_length);
+      memcpy(&judge_recv_mesg.robot_hp_data, data_addr, data_length);
+			//全体机器血量，包括敌方、包括前哨站和基地血量
 		}
 		break;
+		
+		case DART_LAUNCHING_ID:
+		{
+		  memcpy(&judge_recv_mesg.dart_lauch_data, data_addr, data_length);
+			//飞镖发射时剩余比赛事件，单位秒
+		
+		}break;
     
     case FIELD_EVENT_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.field_event_data, data_addr, data_length);
+			//场地事件数据。只发送己方信息，包括停机坪状态，能量机关激活状态，基地虚拟护盾状态
 		}
 		break;
 		
 		case FIELD_SUPPY_ACTION_ID:
 		{
       memcpy(&judge_recv_mesg.supply_action_data, data_addr, data_length);
+			//补给站动作标识。包括出弹口开闭状态，补弹数量，机器人ID
 		}
 		break;
 		
-		case FIELD_SUPPY_BOOKING_ID:
+		case JUDGE_WARNING_ID:
 		{
-      memcpy(&judge_recv_mesg.supply_booking_data, data_addr, data_length);
+		  memcpy(&judge_recv_mesg.referee_warning_data, data_addr, data_length);
+		  //裁判警告信息，警告等级，机器人ID
 		}
-		break;
-
+		
+		case DART_STATION_COUNTING_ID:
+		{
+		  memcpy(&judge_recv_mesg.dart_remaining_time, data_addr, data_length);
+		  //飞镖口发射倒计时
+		}
+		
 		case ROBOT_STATE_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.robot_state_data, data_addr, data_length);
+			/*比赛机器人状态，只发送给自己。
+			
+			  包括id，等级，HP，HP_max，枪口冷却值，冷却值max，云台底盘发射器的电源开闭状态
+			*/
 		}
 		break;
     
     case REAL_POWER_HEAT_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.power_heat_data, data_addr, data_length);
+			//底盘功率，电流、电压，缓存功率
 		}
 		break;
 		
     case ROBOT_POS_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.robot_pos_data, data_addr, data_length);
+			//机器人位置，xyz yaw
 		}
 		break;
     
 		case ROBOT_GAIN_BUFF_ID:
 		{
       memcpy(&judge_recv_mesg.get_buff_data, data_addr, data_length);
+			//机器人血量补血状态，枪口热量冷却加成，防御加成，攻击加成
 		}
 		break;
 		
 		case DRONE_ENERGY_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.drone_energy_data, data_addr, data_length);
+			//空中机器人能量状态，包括积累的能量点，可攻击的时间
 		}
 		break;
 		
 		case REAL_BLOOD_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.blood_changed_data, data_addr, data_length);
+			//哪块装甲板伤害，扣血类型
 		}
 		break;
 
     case REAL_SHOOT_DATA_ID:
 		{
       memcpy(&judge_recv_mesg.real_shoot_data, data_addr, data_length);
+			//实时射击信息，子弹类型、射频、射速
 		}
 		break;
 		
-    default:
+		case NUMBER_BULLETS_LEFT_ID:
 		{
-			break;
+			memcpy(&judge_recv_mesg.bullet_remaining_data, data_addr, data_length);
+			//子弹剩余发射数，空中机器人，哨兵机器人以及 ICRA 机器人主控发送
 		}
+		
+		case ROBOT_RFID_STATE_ID:
+		{
+			memcpy(&judge_recv_mesg.rfid_status, data_addr, data_length);
+			//机器人 RFID 状态，各增益点状态
+		}
+		
+    default: break;
+		
 		
   }
   
-	
+	/*读取自己的机器人ID，设置对应的客户端*/
 	switch (judge_recv_mesg.robot_state_data.robot_id)
 	{
 		 case Hero_R1:
