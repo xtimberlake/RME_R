@@ -857,6 +857,11 @@
               <FileType>1</FileType>
               <FilePath>..\mathlib\remote_msg.c</FilePath>
             </File>
+            <File>
+              <FileName>kalman_filters.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\mathlib\kalman_filters.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
