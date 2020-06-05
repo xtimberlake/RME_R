@@ -14,6 +14,43 @@
 #define __KALMAN_FILTERS_EXT extern
 #endif
 
+#include "arm_math.h"
+
+#define mat         arm_matrix_instance_f32 
+#define mat_init    arm_mat_init_f32
+#define mat_add     arm_mat_add_f32
+#define mat_sub     arm_mat_sub_f32
+#define mat_mult    arm_mat_mult_f32
+#define mat_trans   arm_mat_trans_f32
+#define mat_inv     arm_mat_inverse_f32
+
+//矩阵定义，用于计算
+typedef struct
+{
+  float raw_value;              //当前测量值
+  float filtered_value[2];      //二维滤波计算后返回值,i.e. 等于xhat
+  mat xhat, xhatminus, z, A, H, AT, HT, Q, R, P, Pminus, K; 
+} kalman_filter_t;
+
+//数组定义，用于矩阵初始化
+typedef struct
+{
+  float raw_value;
+  float filtered_value[2];
+  float xhat_data[2], xhatminus_data[2], z_data[2],Pminus_data[4], K_data[4];
+  float P_data[4];
+  float AT_data[4], HT_data[4];
+  float A_data[4];
+  float H_data[4];
+  float Q_data[4];
+  float R_data[4];
+} kalman_filter_init_t;
+
+
+
+
+
+
 //一阶卡尔曼滤波结构体定义,都是标量
 typedef struct
 {
@@ -40,7 +77,8 @@ typedef struct
 
 
 __KALMAN_FILTERS_EXT void kalman_init(kalman_filter_struct_t *p, float Q, float R);
-__KALMAN_FILTERS_EXT float kalman_filter_calc(kalman_filter_struct_t *p, float z_k);
+__KALMAN_FILTERS_EXT void kalman_filter_init(kalman_filter_t *F, kalman_filter_init_t *I);
+__KALMAN_FILTERS_EXT float *kalman_filter_calc(kalman_filter_t *F, float signal1, float signal2);
 
 
 #endif
