@@ -318,6 +318,7 @@ typedef enum
   REAL_SHOOT_DATA_ID      = 0X0207, //实时射击数据，子弹发射后发送
 	NUMBER_BULLETS_LEFT_ID  = 0x0208, //弹丸剩余发射数，仅空中机器人，哨兵机器人以及 ICRA 机器人发送，1Hz 周期发送
 	ROBOT_RFID_STATE_ID     = 0x0209, //机器人 RFID 状态，1Hz 周期发送
+	DART_CLIENT_CMD_DATA_ID = 0x020A, //飞镖机器人客户端指令数据，10Hz周期发送
 	
   ROBOT_INTERACTIVE_ID    = 0x0301, //机器人间交互数据 、客户端自定义数据，上限 10Hz
 	STU_CUSTOM_DATA_CMD_ID  = 0xD180, //客户端自定义数据内容ID
@@ -333,14 +334,19 @@ typedef enum
 	Standard_R5 = 5,
 	Aerial_R6   = 6,
 	Sentry_R7   = 7,
+	Dart_R8     = 8,
+	Radar_R9    = 9,
 	//Blue
-	Hero_B1     = 11,
-	Engineer_B2 = 12,
-	Standard_B3 = 13,
-	Standard_B4 = 14,
-	Standard_B5 = 15,
-	Aerial_B6   = 16,
-	Sentry_B7   = 17,
+	Hero_B1     = 101,
+	Engineer_B2 = 102,
+	Standard_B3 = 103,
+	Standard_B4 = 104,
+	Standard_B5 = 105,
+	Aerial_B6   = 106,
+	Sentry_B7   = 107,
+	Dart_B8     = 108,
+	Radar_B9    = 109,
+	
 } robot_id_e;
 
 typedef enum
@@ -579,6 +585,19 @@ typedef __packed struct
 	*/
 } ext_rfid_status_t;
 
+//0x020A 飞镖机器人客户端指令数据，发送单一机器人
+typedef __packed struct
+{
+ uint8_t dart_launch_opening_status;
+ uint8_t dart_attack_target;
+ uint16_t target_change_time;
+ uint8_t first_dart_speed;
+ uint8_t second_dart_speed;
+ uint8_t third_dart_speed;
+ uint8_t fourth_dart_speed;
+ uint16_t last_dart_launch_time;
+ uint16_t operate_launch_cmd_time;
+} ext_dart_client_cmd_t;
 
 //0x0301
 typedef __packed struct
@@ -632,6 +651,7 @@ typedef struct
 	ext_shoot_data_t                real_shoot_data;       //0x0207     
 	ext_bullet_remaining_t          bullet_remaining_data; //0x0208
 	ext_rfid_status_t               rfid_status;           //0x0209
+	ext_dart_client_cmd_t           dart_client_cmd_data;  //0x020A
 	
   ext_student_interactive_header_data_t  stu_interactive_data; //0x0301
 	
@@ -658,21 +678,6 @@ extern ext_student_interactive_header_data_t student_interactive_header_id;
 extern send_judge_t                          judge_send_mesg;
 extern uint16_t                              Stu_Client_ID;
 void  judgement_data_handler(uint8_t *p_frame);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

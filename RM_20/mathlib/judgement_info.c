@@ -173,6 +173,12 @@ void judgement_data_handler(uint8_t *p_frame)
 			//机器人 RFID 状态，各增益点状态
 		}
 		
+		case DART_CLIENT_CMD_DATA_ID:
+		{
+		  memcpy(&judge_recv_mesg.rfid_status, data_addr, data_length);
+		  //飞镖机器人客户端指令数据
+		}
+		
     default: break;
 		
 		
