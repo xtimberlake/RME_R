@@ -9,7 +9,7 @@
 #include "cmsis_os.h"
 #include "math.h"
 #include "rotate_task.h"
-#define E_rotate 1 //数字1表示使用3508旋转电机
+#define E_rotate 1 //数字1表示使用3508旋转电机,否则使用旋转气缸
 
 
 /** 
@@ -23,8 +23,8 @@
 
 void keyboard_handle()
 {
-	
-	keyboard_chassis_ctrl(); //底盘部分键盘操作
+	//未测试
+	//keyboard_chassis_ctrl(); //底盘部分键盘操作
 	
 }
 

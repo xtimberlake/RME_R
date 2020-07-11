@@ -130,7 +130,7 @@ void slip_task(void const *argu)
 					}break;
 		case SLIP_KEYBOARD:
 					{
-						keyboard_handle();
+						//keyboard_handle();
 					
 					}break;			
 	
