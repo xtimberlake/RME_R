@@ -25,7 +25,6 @@
 #include "dma.h"
 #include "tim.h"
 #include "usart.h"
-#include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -41,7 +40,7 @@
 #include "bsp_pump.h"
 #include "modeswitch_task.h"
 #include "gimbal_task.h"
-#include "judge_unpack_task.h"
+#include "judge.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,7 +190,6 @@ void BSP_init()
 	uplift_init();
 	slip_init();
 	uart_init();
-	judge_unpack_task_Init();
 	pump_init();
 
 	bullet.loosetime = 30; //ÈÓ×Óµ¯Ê±¼ä

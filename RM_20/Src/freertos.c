@@ -37,8 +37,7 @@
 #include "slip_task.h"
 #include "rotate_task.h"
 #include "relay_task.h"
-#include "judge_unpack_task.h"
-#include "judge_send_task.h"
+#include "judge.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +69,6 @@ osTimerId uplift_timer_id;
 osTimerId	slip_timer_id;
 osTimerId	rotate_timer_id;
 
-TaskHandle_t judge_unpack_task_t;
 osTimerId judge_sendTimer_id;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -82,7 +80,6 @@ osThreadId defaultTaskHandle;
 
 void StartDefaultTask(void const * argument);
 
-extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
@@ -154,8 +151,6 @@ void MX_FREERTOS_Init(void) {
 		osTimerDef(judge_sendTimer, judge_send_task);
   judge_sendTimer_id = osTimerCreate(osTimer(judge_sendTimer), osTimerPeriodic, NULL);
     
-		osThreadDef(unpackTask, judge_unpack_task,osPriorityLow, 0, 512);
-  judge_unpack_task_t = osThreadCreate(osThread(unpackTask), NULL);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -210,9 +205,7 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
     
-                 
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
+    
 
   /* USER CODE BEGIN StartDefaultTask */
 	

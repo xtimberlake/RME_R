@@ -20,7 +20,6 @@
 #include "pid.h"
 #include "data_processing.h"
 #include "bsp_motor.h"
-#include "judge_send_task.h"
 #include "slip_task.h"
 
 extern osTimerId chassis_timer_id;

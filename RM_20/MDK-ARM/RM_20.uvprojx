@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx,USE_HAL_DRIVER,STM32F407xx,ARM_MATH_CM4,__FPU_PRESENT=1</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\app;..\bsp;..\mathlib;..\SystemView;..\SystemView\Config;..\SystemView\FreeRTOSV9;..\SystemView\FreeRTOSV9\Config;..\SystemView\FreeRTOSV9\Patch;..\SystemView\SEGGER;..\Drivers\CMSIS\Source</IncludePath>
+              <IncludePath>../Inc; ../Drivers/STM32F4xx_HAL_Driver/Inc; ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy; ../Middlewares/Third_Party/FreeRTOS/Source/include; ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS; ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F; ../Drivers/CMSIS/Device/ST/STM32F4xx/Include; ../Drivers/CMSIS/Include; ..\app; ..\bsp; ..\mathlib; ..\SystemView; ..\SystemView\Config; ..\SystemView\FreeRTOSV9; ..\SystemView\FreeRTOSV9\Config; ..\SystemView\FreeRTOSV9\Patch; ..\SystemView\SEGGER; ..\Drivers\CMSIS\Source</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -428,26 +428,6 @@
               <FilePath>../Src/usart.c</FilePath>
             </File>
             <File>
-              <FileName>usb_device.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/usb_device.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_conf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/usbd_conf.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_desc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/usbd_desc.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_cdc_if.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/usbd_cdc_if.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_it.c</FilePath>
@@ -467,21 +447,6 @@
         <Group>
           <GroupName>Drivers/STM32F4xx_HAL_Driver</GroupName>
           <Files>
-            <File>
-              <FileName>stm32f4xx_hal_pcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_pcd_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_ll_usb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c</FilePath>
-            </File>
             <File>
               <FileName>stm32f4xx_hal_can.c</FileName>
               <FileType>1</FileType>
@@ -573,11 +538,6 @@
           <GroupName>Drivers/CMSIS</GroupName>
           <Files>
             <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/system_stm32f4xx.c</FilePath>
-            </File>
-            <File>
               <FileName>arm_mat_add_f32.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Drivers\CMSIS\Source\arm_mat_add_f32.c</FilePath>
@@ -621,6 +581,11 @@
               <FileName>arm_mat_trans_f32.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Drivers\CMSIS\Source\arm_mat_trans_f32.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/system_stm32f4xx.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -680,31 +645,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Middlewares/USB_Device_Library</GroupName>
-          <Files>
-            <File>
-              <FileName>usbd_core.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_ctlreq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_ioreq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_cdc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Application/UserBsp</GroupName>
           <Files>
             <File>
@@ -727,6 +667,11 @@
               <FileType>1</FileType>
               <FilePath>..\bsp\bsp_uart.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_T_imu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bsp\bsp_T_imu.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -746,16 +691,6 @@
               <FileName>gimbal_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\gimbal_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>judge_send_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\judge_send_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>judge_unpack_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\judge_unpack_task.c</FilePath>
             </File>
             <File>
               <FileName>modeswitch_task.c</FileName>
@@ -797,6 +732,11 @@
               <FileType>1</FileType>
               <FilePath>..\app\keyboard_handle.c</FilePath>
             </File>
+            <File>
+              <FileName>judge.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\judge.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -833,11 +773,6 @@
               <FilePath>..\mathlib\define_printf.c</FilePath>
             </File>
             <File>
-              <FileName>judgement_info.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\mathlib\judgement_info.c</FilePath>
-            </File>
-            <File>
               <FileName>math_calcu.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\mathlib\math_calcu.c</FilePath>
@@ -848,11 +783,6 @@
               <FilePath>..\mathlib\pid.c</FilePath>
             </File>
             <File>
-              <FileName>protocol.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\mathlib\protocol.c</FilePath>
-            </File>
-            <File>
               <FileName>remote_msg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\mathlib\remote_msg.c</FilePath>
@@ -861,6 +791,11 @@
               <FileName>kalman_filters.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\mathlib\kalman_filters.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\mathlib\crc.c</FilePath>
             </File>
           </Files>
         </Group>
