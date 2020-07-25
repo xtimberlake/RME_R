@@ -48,14 +48,14 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, AIR_HELP_Pin|AIR_PRESS_Pin|AIR_CLAW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, AIR_HELP_Pin|AIR_PRESS_Pin|AIR_BRACKET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, AIR_BRACKET_Pin|AIR_ROTATE_Pin|AIR_MAGAZINE_Pin|CAMERA_Pin 
+  HAL_GPIO_WritePin(GPIOB, AIR_THROW_Pin|AIR_BULLET1_Pin|AIR_BULLET2_Pin|AIR_RESERVE_Pin 
                           |LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = AIR_HELP_Pin|AIR_PRESS_Pin|AIR_CLAW_Pin;
+  GPIO_InitStruct.Pin = AIR_HELP_Pin|AIR_PRESS_Pin|AIR_BRACKET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -63,7 +63,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin 
                            PBPin */
-  GPIO_InitStruct.Pin = AIR_BRACKET_Pin|AIR_ROTATE_Pin|AIR_MAGAZINE_Pin|CAMERA_Pin 
+  GPIO_InitStruct.Pin = AIR_THROW_Pin|AIR_BULLET1_Pin|AIR_BULLET2_Pin|AIR_RESERVE_Pin 
                           |LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

@@ -6,8 +6,8 @@ CAN_RxHeaderTypeDef Rx1Message;//接收数据句柄
 uint8_t CAN_Tx_data[8];
 uint8_t CAN_Rx_data[8];
 
-
-
+float M1_realecd=0;
+moto_measure_t moto_rotate[2];
 
 /**
   * @brief   can filter initialization     设置CAN滤波器组
@@ -54,7 +54,7 @@ void can_device_init(void)
 						将计算好的电流发送到电机
   * @param  3508 motor current
   */
-void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
+void send_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
 {
 	uint8_t FreeTxNum = 0;  
 	
@@ -78,7 +78,6 @@ void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
 	{  
     FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);  
   }
-	
 	HAL_CAN_AddTxMessage(&hcan, &Tx1Message,CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX1);
 }
 
@@ -91,11 +90,91 @@ void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&Rx1Message, CAN_Rx_data);//从hcan的FIFO0区域获取一个Rx1Message(CAN帧)并将其放入数组CAN_Rx_data中
-//	switch (Rx1Message.StdId)
-//	{
-//		case CAN_3508_M1_ID:	encoder_data_handler(&M1, hcan);
-//	}
+	switch (Rx1Message.StdId)
+	{
+		case CAN_3508_M1_ID:	
+		{
+			moto_rotate[0].msg_cnt++ <= 50 ? 
+			get_moto_offset(&moto_rotate[0], hcan,CAN_Rx_data) : encoder_data_handler(&moto_rotate[0], hcan);
+		}break;
+		case CAN_3508_M2_ID:	
+		{
+			moto_rotate[1].msg_cnt++ <= 50 ? 
+			get_moto_offset(&moto_rotate[0], hcan,CAN_Rx_data) : encoder_data_handler(&moto_rotate[0], hcan);
+		}break;
+	}
 	__HAL_CAN_ENABLE_IT(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 	
+}
+
+/**
+  * @brief     get motor rpm and calculate motor round_count/total_encoder/total_angle    获取电机转速，计算电机转速
+  * @param     ptr: Pointer to a moto_measure_t structure
+  * @attention this function should be called after get_moto_offset() function
+  */
+void encoder_data_handler(moto_measure_t* ptr, CAN_HandleTypeDef* hcan)
+{
+		//转子转速
+	ptr->speed_rpm     = (int16_t)(CAN_Rx_data[2] << 8 | CAN_Rx_data[3]);
+	
+	//机械角度
+  ptr->last_ecd = ptr->ecd;
+  ptr->ecd      = (uint16_t)(CAN_Rx_data[0] << 8 | CAN_Rx_data[1]);	//将两个八位数据合成16位
+
+
+  if (ptr->ecd - ptr->last_ecd > 4096)
+  {
+    ptr->round_cnt--;
+    ptr->ecd_raw_rate = ptr->ecd - ptr->last_ecd - 8192;
+  }
+  else if (ptr->ecd - ptr->last_ecd < -4096)
+  {
+    ptr->round_cnt++;
+    ptr->ecd_raw_rate = ptr->ecd - ptr->last_ecd + 8192;
+  }
+  else
+  {
+    ptr->ecd_raw_rate = ptr->ecd - ptr->last_ecd;
+  }//计算电机转速，自带环形数据,round_cnt是电机转动圈数
+
+  ptr->total_angle = ptr->round_cnt * 8192 + ptr->ecd - ptr->offset_ecd;//转动总编码值
+	
+	M1_realecd += ((circle_error(ptr->ecd,ptr->last_ecd,8192))/22.75f/19.0f);
+  
+}
+
+/**
+  * @brief     get motor initialize offset value	获取电机初始位置
+  * @param     ptr: Pointer to a moto_measure_t structure
+  * @retval    None
+  * @attention this function should be called after system can init
+  */
+void get_moto_offset(moto_measure_t* ptr, CAN_HandleTypeDef* hcan,uint8_t CAN_Rx_data[8])
+{
+  ptr->ecd        = (uint16_t)(CAN_Rx_data[0] << 8 | CAN_Rx_data[1]);
+  ptr->offset_ecd = ptr->ecd;
+}
+
+
+/**
+	*@func   float Circle_error(float set ,float get ,float circle_para)
+	*@bref		环形数据计算差值
+	*@param[in] set 设定值 get采样值 circle_para 一圈数值
+	*@note	环形数据下，计算差值
+*/
+int16_t circle_error(int16_t ref ,int16_t lastref ,int16_t circle_para)
+{
+	int16_t error;
+	if((ref-lastref)>(circle_para/2))
+	{
+			error = ref - lastref - circle_para;
+	}
+	else if((ref - lastref)<(-circle_para/2))
+	{
+			error = ref - lastref +circle_para;
+	}
+	else	error = ref - lastref;
+
+	return error;
 }
 

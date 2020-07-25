@@ -14,9 +14,6 @@ typedef struct
 	uint8_t	 receive_buff1[DMA_recive_buff_LEN];
 	uint8_t  receive_buff2[DMA_recive_buff_LEN];
 	uint8_t  receive_buff3[DMA_recive_buff_LEN];
-	uint8_t  receive_buff4[DMA_recive_buff_LEN];
-	uint8_t  receive_buff5[DMA_recive_buff_LEN];
-	uint8_t  receive_buff6[DMA_recive_buff_LEN];
 	
 } dma_rec_t;
 

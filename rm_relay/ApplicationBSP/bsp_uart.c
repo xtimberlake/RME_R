@@ -75,7 +75,7 @@ void USER_UART_FUNCTION(UART_HandleTypeDef *huart)
 	{
 		if(DMA.receive_buff1[0]==0XAA && DMA.receive_buff1[1]==0XBB)
 		{MAIN_get_data(DMA.receive_buff1);}																								//MAIN数据解算	
-		memset(DMA.receive_buff1,0,DMA_recive_buff_LEN);                                  //清零接收缓冲区
+//		memset(DMA.receive_buff1,0,DMA_recive_buff_LEN);                                  //清零接收缓冲区
 		HAL_UART_Receive_DMA(huart, (uint8_t*)DMA.receive_buff1, DMA_recive_buff_LEN);    //重启开始DMA传输
 	}
 	else if(huart->Instance== USART2)
@@ -87,7 +87,7 @@ void USER_UART_FUNCTION(UART_HandleTypeDef *huart)
 	}
 	else if(huart->Instance== USART3)
 	{
-		TOF[1]=TOF_GetData(DMA.receive_buff3);																						 //左前小激光解算		
+		TOF[1]=TOF_GetData(DMA.receive_buff3);																						 //左前小激光解算		波特率改成115200了
 		memset(DMA.receive_buff3,0,DMA_recive_buff_LEN);                                     
 		HAL_UART_Receive_DMA(huart, (uint8_t*)DMA.receive_buff3, DMA_recive_buff_LEN);     
 	}

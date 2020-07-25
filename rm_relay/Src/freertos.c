@@ -30,6 +30,7 @@
 #include "gas_task.h"
 #include "view_task.h"
 #include "tim.h"
+#include "rotate_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,11 +52,12 @@ volatile int pitch_value=1150;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+osTimerId	rotate_timer_id;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId gas_task_idHandle;
 osThreadId view_task_idHandle;
+osThreadId relay_commun_taHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -65,6 +67,7 @@ osThreadId view_task_idHandle;
 void StartDefaultTask(void const * argument);
 extern void gas_task(void const * argument);
 extern void view_task(void const * argument);
+extern void relay_commun_task(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -89,7 +92,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
 	taskENTER_CRITICAL();
-
+	osTimerDef(rotateTimer, rotate_task);
+  rotate_timer_id = osTimerCreate(osTimer(rotateTimer), osTimerPeriodic, NULL);
 	
 	
   /* USER CODE END RTOS_TIMERS */
@@ -104,12 +108,16 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of gas_task_id */
-  osThreadDef(gas_task_id, gas_task, osPriorityHigh, 0, 128);
+  osThreadDef(gas_task_id, gas_task, osPriorityNormal, 0, 128);
   gas_task_idHandle = osThreadCreate(osThread(gas_task_id), NULL);
 
   /* definition and creation of view_task_id */
-  osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 128);
+  osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 256);
   view_task_idHandle = osThreadCreate(osThread(view_task_id), NULL);
+
+  /* definition and creation of relay_commun_ta */
+  osThreadDef(relay_commun_ta, relay_commun_task, osPriorityNormal, 0, 128);
+  relay_commun_taHandle = osThreadCreate(osThread(relay_commun_ta), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -131,12 +139,13 @@ void StartDefaultTask(void const * argument)
     
     
     
+    
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
   {
-
+		osDelay(10);
   }
   /* USER CODE END StartDefaultTask */
 }
