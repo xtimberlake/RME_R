@@ -150,7 +150,7 @@ void MX_FREERTOS_Init(void) {
 	
 		osTimerDef(judge_sendTimer, judge_send_task);
   judge_sendTimer_id = osTimerCreate(osTimer(judge_sendTimer), osTimerPeriodic, NULL);
-    
+	
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -180,7 +180,7 @@ void MX_FREERTOS_Init(void) {
   gimbal_task_t = osThreadCreate(osThread(gimbal_Task), NULL);
 	 	 /* low priority task */
 	 
-	 osThreadDef(modeTask, mode_switch_task, osPriorityNormal, 0, 512);
+	 osThreadDef(modeTask, mode_switch_task, osPriorityAboveNormal, 0, 512);
 	mode_sw_task_t = osThreadCreate(osThread(modeTask), NULL);
 
 	 osThreadDef(debugTask, debug_task, osPriorityLow, 0, 256);

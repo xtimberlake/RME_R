@@ -70,6 +70,13 @@ void chassis_task(void const *argu)
 			chassis.vw = 0.3*(double)chassis_w_ramp.out;
 		}
 		break;
+		case CHASSIS_RC_NEAR: //激光测距方案贴资源岛行走
+		{
+			chassis.vx = -pid_calc(&pid_chassis_near_x,(float)relay.dis1+(float)relay.dis2,chassis.dis_ref);//调距离
+			chassis.vy = (float)rc.ch1*3;
+			chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
+		}
+		break;		
 		case CHASSIS_KB_NEAR: //激光测距方案贴资源岛行走
 		{
 			chassis_ramp();
@@ -77,21 +84,21 @@ void chassis_task(void const *argu)
 			chassis.vy = (float)(chassis_y_ramp.out);
 			chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
 		}
-		break;
-		case CHASSIS_KB_LIMIT_TOUCH: //限位开关方案贴资源岛行走
-		{
-			//limit equals 1 when unpressed
-			chassis.LIMIT_LEFT=HAL_GPIO_ReadPin(INDUCTIVE_LEFT_GPIO_Port,INDUCTIVE_LEFT_Pin);
-			chassis.LIMIT_RIGHT=HAL_GPIO_ReadPin(INDUCTIVE_RIGHT_GPIO_Port,INDUCTIVE_RIGHT_Pin);
-			if(chassis.LIMIT_LEFT||chassis.LIMIT_RIGHT)
-				{
-					chassis.vy=chassis.target_vy-300;
-				}
-				else chassis.vy=chassis.target_vy;
-				chassis.vx = chassis.target_vx;
-				chassis.vw = chassis.target_vw;
-		}
-		break;
+		break;	
+//		case CHASSIS_KB_LIMIT_TOUCH: //限位开关方案贴资源岛行走
+//		{
+//			//limit equals 1 when unpressed
+//			chassis.LIMIT_LEFT=HAL_GPIO_ReadPin(INDUCTIVE_LEFT_GPIO_Port,INDUCTIVE_LEFT_Pin);
+//			chassis.LIMIT_RIGHT=HAL_GPIO_ReadPin(INDUCTIVE_RIGHT_GPIO_Port,INDUCTIVE_RIGHT_Pin);
+//			if(chassis.LIMIT_LEFT||chassis.LIMIT_RIGHT)
+//				{
+//					chassis.vy=chassis.target_vy-300;
+//				}
+//				else chassis.vy=chassis.target_vy;
+//				chassis.vx = chassis.target_vx;
+//				chassis.vw = chassis.target_vw;
+//		}
+//		break;
 		default:{}break;
 	}		
 	

@@ -10,12 +10,16 @@
 
 #define SLIP_PERIOD 10
 
+#define SLIP_L 	50
+#define SLIP_Mi 0
+#define SLIP_R 	50
+
 typedef enum
 {
 	SLIP_UNKNOWN,		//未知态
 	SLIP_CALIBRA,		//校准	
 	SLIP_KNOWN			//校准完成
-} slip_mode_e;	//横移机构
+} slip_init_e;	//横移机构
 
 
 typedef enum
@@ -37,7 +41,7 @@ typedef enum
 
 typedef struct
 {
-	slip_mode_e   				mode;	
+	slip_init_e   				state;	
   slip_ctrl_mode_e   		ctrl_mode;
   slip_ctrl_mode_e   		last_ctrl_mode;
 	slip_position_flag_e	position_flag;

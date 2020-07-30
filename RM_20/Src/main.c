@@ -41,6 +41,8 @@
 #include "modeswitch_task.h"
 #include "gimbal_task.h"
 #include "judge.h"
+
+#include "rotate_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,6 +193,7 @@ void BSP_init()
 	slip_init();
 	uart_init();
 	pump_init();
+	rotate_init();
 
 	bullet.loosetime = 30; //ÈÓ×Óµ¯Ê±¼ä
 	

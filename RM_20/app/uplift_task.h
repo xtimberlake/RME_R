@@ -21,26 +21,19 @@
 
 #define UPLIFT_PERIOD 10
 
-#define HEIGHT_DOWN_LIMIT		0			//初始化高度
-#define HEIGHT_UP_LIMIT			92.0f		//上限的高度
-#define HEIGHT_GIVE					39.1f		//传输子弹的高度.
-#define HEIGHT_GET					60.0f		//取弹机构取出弹药箱的高度.
-#define HEIGHT_AIM					31.0f		//对位的高度		对位是否就是取弹高度
-#define HEIGHT_NORMAL					0.0f		//普通
-
-#define HEIGHT_CLIMB_UP_HANG			91.5f				//登岛对位
-#define HEIGHT_CLIMB_UP_ZHUZI			89.3f				//上岛抱柱
-#define HEIGHT_CLIMB_DOWN_HANG		6.0f			//下岛对位
-//#define HEIGHT_CLIMB_DOWN_ZHUZI		10.3f			//下岛抱柱
-#define HEIGHT_CLIMB_ON_TOP				4.2f				//登岛台上
-#define HEIGHT_CLIMB_RETRACT			-1.0f				//登岛缩起
+#define HEIGHT_DOWN_LIMIT		0				//初始化高度
+#define HEIGHT_UP_LIMIT			1.0f		//上限的高度
+#define HEIGHT_GET					1.0f		//取弹高度
+#define HEIGHT_GET_2				1.0f		//取第二排弹高度
+#define HEIGHT_GET_PULL			1.0f		//取弹提升后高度
+#define HEIGHT_GIVE					1.1f		//传输子弹的高度.
 
 typedef enum
 {
 	UPLIFT_UNKNOWN,		//未知态
 	UPLIFT_CALIBRA,		//校准	
 	UPLIFT_KNOWN			//校准完成
-} uplift_mode_e;//抬升机构
+} uplift_init_e;//初始化过程
 
 
 typedef enum
@@ -58,39 +51,39 @@ typedef enum
 } uplift_position_flag_e;//抬升机构位置标志
 typedef struct
 {
+	uplift_init_e				 state;
   uplift_ctrl_mode_e   ctrl_mode;
   uplift_ctrl_mode_e   last_ctrl_mode;
 	uplift_position_flag_e position_flag;
-	
-  uplift_mode_e   mode;	
+		
   int16_t         current[2];
 	float						height_ref[2];	//抬升机构高度设定值
 	float						height_fdb[2];	//抬升机构高度反馈值
-	float						height_offset[2];//接触到光电开关后动态补偿
-	int16_t					spd_ref[2];
-	uint8_t 				down_limit1;
-	uint8_t 				down_limit2;
+	float						height_offset[2];//高度补偿值
+	float						height_calibra_offset[2];//初始化过程高度补偿值
 	
-	uint8_t					slip_limit_front; //横移限位开关（前）
-	uint8_t 				slip_limit_back;//横移限位开关（后）
+	int16_t					spd_ref[2];
+	float						down_limit1;
+	float						down_limit2;
+	
+	uint8_t					calibra_flag1;
+	uint8_t					calibra_flag2;
 	
 	uint8_t 				last_down_limit1;
 	uint8_t 				last_down_limit2;
-	
-	uint8_t  				offset_flag;//自动模式下校准抬升机构，其他模式可不理
+									
 
 	float height_get_bullet_REF;
 	float height_give_hero_REF;
-	
+		
 	float height_up_limit;
+	float height_down_limit;
+	
+	
 	float height_give;
 	float height_get;
 	float height_aim;
 	float height_normal;
-	float height_climb_up_hang;
-	float height_climb_up_zhuzi;
-	float height_climb_down_hang;
-//	float height_climb_down_zhuzi;
 	float height_climb_on_top;
 	float height_climb_retract;
 

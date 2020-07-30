@@ -39,17 +39,18 @@ void relay_task(void const *argu)
 	relay.status[1]=0XBB;
 	
 	for(;;)
-	{
+	{	
 		help_executed();
-		bracket_executed();
-		magazine_executed();
-		throw_executed();
 		press_executed();
-		rotate_executed();
-		interact_executed();
-		
+		bracket_executed();
+		throw_executed();
+		bullet1_executed();
+		bullet2_executed();
+
 		camera_executed();
-		laser_executed();
+		rotate_executed();
+		
+		relay_safe_executed();
 		
 		relay.status[2] = relay.gas_status;
 		relay.status[3] = relay.electrical_status;
@@ -60,7 +61,6 @@ void relay_task(void const *argu)
 		relay.status[7] = relay.view_tx.pitch;
 		
 		
-		
 		taskENTER_CRITICAL();
 		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 8, 0xff);
 		osDelay(10); //—” ±“ª∂Œ ±º‰£¨»√∆¯∑ß∞ÂºÏ≤‚ø’œ–
@@ -69,9 +69,5 @@ void relay_task(void const *argu)
 	}
 
 }
-
-
-
-
 
 

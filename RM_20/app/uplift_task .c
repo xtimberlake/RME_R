@@ -10,155 +10,19 @@
   */
 #define __UPLIFT_TASK_GLOBALS
 #include "uplift_task.h"
-#include "cmsis_os.h"
-#include "usart.h"
-#include "comm_task.h"
-#include "string.h"	
-#include "modeswitch_task.h"
-#include "remote_msg.h"
 #include "pid.h"
-#include "stdlib.h"
 #include "bsp_can.h"
 #include "bsp_motor.h"
-#include "data_processing.h"
-#include "math_calcu.h"
+#include "cmsis_os.h"
+#include "string.h"
+#include "remote_msg.h"
+#include "math.h"
+#include "keyboard_handle.h"
 
 #define uplift_ratio (8192.0f)
 
 uint16_t uplift_test;
 extern TaskHandle_t can_msg_send_task_t;
-
-/**
-  * @brief uplift_task
-  * @param     
-  * @attention  
-	* @note  软件定时器
-  */
-void uplift_task(void const *argu)
-{
-	taskENTER_CRITICAL();
-	uplift.height_fdb[0] =  moto_uplift[0].total_ecd/uplift_ratio  -  uplift.height_offset[0];//具体需要测试
-	uplift.height_fdb[1] = -moto_uplift[1].total_ecd/uplift_ratio  -  uplift.height_offset[1];
-	uplift.down_limit1 = !HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT1_Pin);
-	uplift.down_limit2 = !HAL_GPIO_ReadPin(GPIOB,DOWN_LIMIT2_Pin);
-  uplift.slip_limit_front=HAL_GPIO_ReadPin(INDUCTIVE_LEFT_GPIO_Port,INDUCTIVE_LEFT_Pin);
-	if(uplift.down_limit1==1)		//接触到下限后给补偿值
-	{
-		uplift.height_offset[0] = moto_uplift[0].total_ecd/uplift_ratio ;	
-//		uplift.spd_ref[0] =0;
-		if(uplift.last_down_limit1==0){
-			uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;		//设置一次目标值归零
-		}
-	}
-	if(uplift.down_limit2==1)		//接触到下限后给补偿值
-	{
-		uplift.height_offset[1] = -moto_uplift[1].total_ecd/uplift_ratio ;
-//		pid_uplift_height[1].iout = 0;
-//		uplift.spd_ref[1] =0;
-		if(uplift.last_down_limit2==0){
-			uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
-		}
-	}
-	uplift.last_down_limit1 = uplift.down_limit1;
-	uplift.last_down_limit2 = uplift.down_limit2;
-	
-	if(uplift.down_limit1==1&&uplift.down_limit2==1)
-		uplift.mode = UPLIFT_KNOWN;
- 	
-	if(uplift.ctrl_mode==UPLIFT_AUTO&&uplift.mode!=UPLIFT_KNOWN)	//自动模式下无位置状态才开始自动校准
-	{
-		switch(uplift.mode)
-		{
-			case UPLIFT_UNKNOWN:
-				uplift.mode = UPLIFT_CALIBRA;
-				break;
-			case UPLIFT_CALIBRA:
-				
-			{
-				if(uplift.down_limit1==0)		//接触到下限后给补偿值
-					uplift.current[0] =  pid_calc(&pid_calibre_spd[0],moto_uplift[0].speed_rpm,-400);
-				else
-					uplift.current[0] =0;
-				
-				
-				if(uplift.down_limit2==0)		//接触到下限后给补偿值				
-				uplift.current[1] =  pid_calc(&pid_calibre_spd[1],moto_uplift[1].speed_rpm,400);	
-				else
-					uplift.current[1] =0;		
-
-
-			}	
-				break;
-		}
-	}
-	else	//
-	{
-		if(uplift.ctrl_mode==UPLIFT_ADJUST&&uplift.last_ctrl_mode!=UPLIFT_ADJUST)
-		{
-			uplift.height_ref[0] = uplift.height_fdb[0];
-			uplift.height_ref[1] = uplift.height_fdb[1];
-		}
-		switch(uplift.ctrl_mode)
-		{
-			case UPLIFT_STOP:
-			{
-				uplift.current[0] = 0;	
-				uplift.current[1] = 0;
-				uplift.height_ref[0] = uplift.height_fdb[0];
-				uplift.height_ref[1] = uplift.height_fdb[1];
-			}
-				break;
-			
-			case UPLIFT_ADJUST:
-			{
-			
-//				uplift.height_ref[0] -= 0.00056*rc.ch5;
-//				uplift.height_ref[1] -= 0.00056*rc.ch5;
-				
-				uplift.spd_ref[0] = -4*rc.ch5; //调节速度环
-				
-
-				uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]);
-				uplift.current[1] = -uplift.current[0]; //电机相同电流输出值
-		
-		
-			}
-			break;
-				
-			case UPLIFT_AUTO:
-			{
-							//限位未确定
-//				if(uplift.height_ref[0]>uplift.height_up_limit) 
-//					uplift.height_ref[0] = uplift.height_up_limit;
-//				if(uplift.height_ref[1]>uplift.height_up_limit)
-//					uplift.height_ref[1] = uplift.height_up_limit;
-			uplift.current[0] = 0;	
-			uplift.current[1] = 0;
-				
-			}
-			case UPLIFT_KEYBORAD:
-			{
-				//高度限位
-					if(uplift.height_ref[0] > uplift.height_up_limit) 
-					uplift.height_ref[0] = uplift.height_up_limit;
-					if(uplift.height_ref[0] <= 0) //最低位置是0
-					uplift.height_ref[0] = 0;
-					
-					uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]); //高度环
-					uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
-					uplift.current[1] = -uplift.current[0]; //电机相同电流输出值
-			
-			}
-			break;
-		}
-	}
-	uplift.last_ctrl_mode = uplift.ctrl_mode;
-	
-	taskEXIT_CRITICAL();
-	
-	memcpy(motor_cur.uplift_cur, uplift.current, sizeof(uplift.current));
-	osSignalSet(can_msg_send_task_t, UPLIFT_MOTOR_MSG_SEND);
-}
 
 void uplift_init()
 {
@@ -172,35 +36,165 @@ void uplift_init()
 //		PID_struct_init(&pid_calibre_height[1], POSITION_PID, 3000, 500,
 //									2500.0f,	5.0f,	0.0f	);  
 
-		//抬升的PID 
+		//抬升的PID  机械有问题,据浩耘说无法通过pid解决
 		PID_struct_init(&pid_uplift_spd[0], POSITION_PID, 15000, 3000,
-									15.0f,	0.001f,	0.0f	);  
+									10.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_spd[1], POSITION_PID, 15000, 3000,
 									10.0f,	0.0f,	0.0f	);  
+//		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 2800, 500,
+//									800.0f,	0.0f,	0.0f	);  
+//		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 2800, 500,
+//									800.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 2800, 500,
 									800.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 2800, 500,
 									800.0f,	0.0f,	0.0f	);  
 	
-		//收腿的PID 
-		PID_struct_init(&pid_retract_spd[0], POSITION_PID, 15000, 15000,
-									10.0f,	0.02f,	0.0f	);  
-		PID_struct_init(&pid_retract_spd[1], POSITION_PID, 15000, 15000,
-									10.0f,	0.02f,	0.0f	);  
-		PID_struct_init(&pid_retract_height[0], POSITION_PID, 3000, 500,
-									800.0f,	5.0f,	0.0f	);  
-		PID_struct_init(&pid_retract_height[1], POSITION_PID, 3000, 500,
-									800.0f,	5.0f,	0.0f	);  
 	
-	uplift.mode = UPLIFT_UNKNOWN;
+	uplift.state = UPLIFT_UNKNOWN;
 
 	//初始化两个高度反馈
 	
-	uplift.height_get_bullet_REF = 0;
-	uplift.height_give_hero_REF  = 0;
-	
+	uplift.height_get_bullet_REF = HEIGHT_GET;//取弹高度
+	uplift.height_give_hero_REF  = 0;					//给弹高度
+	uplift.calibra_flag1=1;				//初始化标志位
+	uplift.calibra_flag2=1;
+	uplift.height_offset[0] = 0;	//高度补偿值
+	uplift.height_offset[1] = 0;
 }
+/**
+  * @brief uplift_task
+  * @param     
+  * @attention  未调试
+	* @note  软件定时器
+  */
+void uplift_task(void const *argu)
+{
+	taskENTER_CRITICAL();
+	
+	uplift.height_fdb[0] =  moto_uplift[0].total_ecd/uplift_ratio  -  uplift.height_offset[0];
+	uplift.height_fdb[1] =  moto_uplift[1].total_ecd/uplift_ratio  -  uplift.height_offset[1];
+	
+//	if(uplift.state != UPLIFT_KNOWN && uplift.ctrl_mode == UPLIFT_AUTO) //自动模式且未知状态下进行校准  有错 know/unknow
+	if(uplift.state != UPLIFT_KNOWN ) //自动模式且未知状态下进行校准  有错 know/unknow	
+	{
+		switch(uplift.state)
+		{
+			case UPLIFT_UNKNOWN:
+			{
+				uplift.state = UPLIFT_CALIBRA;				
+			}break;
+			case UPLIFT_CALIBRA:
+			{
+//				//如果机械那边靠谱的话就删掉
+//				uplift.current[0]=	0;
+//				uplift.current[1]=	0;
+//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT1_Pin))
+//				{
+//					if(uplift.calibra_flag1)
+//					{
+//						uplift.height_calibra_offset[0] = uplift.height_fdb[0];
+//						uplift.calibra_flag1=0;
+//					}
+//					uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_calibra_offset[0]); //高度环
+//					uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
+//				}
+//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT2_Pin))
+//				{
+//					if(uplift.calibra_flag2)
+//					{
+//						uplift.height_calibra_offset[1] = uplift.height_fdb[1];
+//						uplift.calibra_flag2=0;
+//					}					
+//					uplift.spd_ref[1] = pid_calc(&pid_uplift_height[1],uplift.height_fdb[1],uplift.height_calibra_offset[1]); //高度环
+//					uplift.current[1] = pid_calc(&pid_uplift_spd[1],moto_uplift[1].speed_rpm,uplift.spd_ref[1]); //速度环
+//				}				
+//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT1_Pin)&&HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT2_Pin))
+//				{
+//					//校准成功
+//					uplift.height_offset[0] = moto_uplift[0].total_ecd/uplift_ratio ;	
+//					uplift.height_offset[1] = moto_uplift[1].total_ecd/uplift_ratio ;	
+//					uplift.state=UPLIFT_KNOWN;
+//				}
+				uplift.current[0] = 0;
+				uplift.current[1] = 0;
+				static int handle_up_times=0;
+				handle_up_times++;
+				if(handle_up_times>30 && moto_uplift[0].speed_rpm>-100) //检测堵转(方向未决定)
+				{
+					uplift.height_offset[0] = moto_uplift[0].total_ecd/uplift_ratio ;	
+					uplift.height_offset[1] = moto_uplift[1].total_ecd/uplift_ratio ;	
+					uplift.state = UPLIFT_KNOWN;
+//				 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
+				}
+			}break;
+			case UPLIFT_KNOWN:
+			{
+						
+			}break;
+		}	
+	}
+	else
+	{
+		switch(uplift.ctrl_mode)
+		{
+			case UPLIFT_ADJUST:
+			{
+//				uplift.height_ref[0] -= 0.002*rc.ch5; 
+				uplift.height_ref[0] -= 0.001*rc.ch5; 
+				uplift.height_ref[1] =  -uplift.height_ref[0];
+				
+//				//设置上下限
+				if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;
+				if(uplift.height_ref[1]>=HEIGHT_DOWN_LIMIT)	uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
+//				if(uplift.height_ref[0]>=HEIGHT_UP_LIMIT)	uplift.height_ref[0] = HEIGHT_UP_LIMIT;
+//				if(uplift.height_ref[1]>=HEIGHT_UP_LIMIT)	uplift.height_ref[1] = HEIGHT_UP_LIMIT;
+				
+				uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]); //高度环
+				uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
 
+				uplift.spd_ref[1] = pid_calc(&pid_uplift_height[1],uplift.height_fdb[1],uplift.height_ref[1]); //高度环
+				uplift.current[1] = pid_calc(&pid_uplift_spd[1],moto_uplift[1].speed_rpm,uplift.spd_ref[1]); //速度环		
+
+			}break;
+			case UPLIFT_STOP:
+			{
+				uplift.current[0] = 0;
+				uplift.current[1] = 0;
+				uplift.height_ref[0] =uplift.height_fdb[0] ; //设置当前位置为目标位置
+				uplift.height_ref[1] =uplift.height_fdb[1] ; 
+			}break;
+			case UPLIFT_AUTO:
+			{
+				//设置上下限
+				if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;
+				if(uplift.height_ref[1]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
+				if(uplift.height_ref[0]>=HEIGHT_UP_LIMIT)	uplift.height_ref[0] = HEIGHT_UP_LIMIT;
+				if(uplift.height_ref[1]>=HEIGHT_UP_LIMIT)	uplift.height_ref[1] = HEIGHT_UP_LIMIT;
+								
+				uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_ref[0]); //高度环
+				uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
+				
+				uplift.height_ref[1] =  -uplift.height_ref[0];
+
+				uplift.spd_ref[1] = pid_calc(&pid_uplift_height[1],uplift.height_fdb[1],uplift.height_ref[1]); //高度环
+				uplift.current[1] = pid_calc(&pid_uplift_spd[1],moto_uplift[1].speed_rpm,uplift.spd_ref[1]); //速度环						
+			}break;
+			case UPLIFT_KEYBORAD:
+			{
+				//keyboard_handle();
+			}break;
+		}
+	
+	}
+	
+	uplift.last_ctrl_mode = uplift.ctrl_mode;
+	
+	taskEXIT_CRITICAL();
+	
+	memcpy(motor_cur.uplift_cur, uplift.current, sizeof(uplift.current));
+	osSignalSet(can_msg_send_task_t, UPLIFT_MOTOR_MSG_SEND);
+}
 
 			//设置上下限
 //			if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;

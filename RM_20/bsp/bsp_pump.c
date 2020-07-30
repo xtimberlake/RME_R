@@ -1,11 +1,10 @@
 /** 
-  * @file bsp_pump.c
+  * @file not just bsp_pump.c 有空改掉文件名 =v=
   * @version 1.0
   * @date Mar,2 2018
 	*
-  * @brief  气动元件。救援机构。抱柱爪子，悬架，夹取
+  * @brief  气动元件;旋转夹取电机;倒车摄像头
 	*
-  *	@author li zh
   *
   */
 #define  __BSP_PUMP_GLOBALS                                                                                             
@@ -24,43 +23,38 @@ void throw_executed()
 {
 	if(pump.throw_ctrl_mode ==ON_MODE)	throw_on();
 	else	throw_off();
-}
+}//开关扔弹药箱
 
 void bracket_executed()
 {
 	if(pump.bracket_ctrl_mode ==ON_MODE)	bracket_on();
 	else	bracket_off();
-}
+}//开关伸出支架
 
 void press_executed()
 {
 	if(pump.press_ctrl_mode ==ON_MODE)	press_on();
 	else	press_off();
-}
+}//开关取弹夹子
 
 void help_executed()
 {
 	if(pump.help_ctrl_mode ==ON_MODE)	help_on();
 	else	help_off();
-}
+}//开关救援夹子
 
-void rotate_executed()
+void bullet1_executed()
 {
-	if(pump.rotate_ctrl_mode ==ON_MODE)	rotate_on();
-	else	rotate_off();
-}
+	if(pump.bullet1_ctrl_mode ==ON_MODE)	bullet1_on();
+	else	bullet1_off();
+}//弹药补给1
 
-void magazine_executed()
+void bullet2_executed()
 {
-	if(pump.magazine_ctrl_mode ==ON_MODE)	magazine_on();
-	else	magazine_off();
-}
+	if(pump.bullet2_ctrl_mode ==ON_MODE)	bullet2_on();
+	else	bullet2_off();
+}//弹药补给2
 
-void interact_executed()
-{
-	if(pump.interact_ctrl_mode ==ON_MODE)	interact_on();
-	else	interact_off();
-}
 
 /** 
   
@@ -74,41 +68,48 @@ void camera_executed()
 {
 	if(electrical.camera_ctrl_mode ==ON_MODE)	camera_on();
 	else	camera_off();
-}
+}//切换倒车摄像头视角
 
-void laser_executed()
+void rotate_executed()
 {
-	if(electrical.laser_ctrl_mode ==ON_MODE)	laser_on();
-	else	laser_off();
-}
+	if(electrical.rotate_ctrl_mode ==ON_MODE)	rotate_on();
+	else	rotate_off();
+}//切换气阀板控制旋转电机模式
 
-
+void relay_safe_executed()
+{
+	if(electrical.safe_mode ==ON_MODE)	relay_safe_on();
+	else	relay_safe_off();
+}//安全模式
 
 void pump_init()
 {
 	//程序初始化完成后发送接受气阀信息标志位
 	
 	pump.help_ctrl_mode = OFF_MODE;
-	pump.bracket_ctrl_mode = OFF_MODE;
-	pump.magazine_ctrl_mode = OFF_MODE;
-	pump.throw_ctrl_mode = OFF_MODE;
-	pump.rotate_ctrl_mode = OFF_MODE;
 	pump.press_ctrl_mode = OFF_MODE;
-	pump.interact_ctrl_mode = OFF_MODE;
+	pump.throw_ctrl_mode = OFF_MODE;
+	pump.bracket_ctrl_mode = OFF_MODE;
+	pump.bullet1_ctrl_mode = OFF_MODE;
+	pump.bullet2_ctrl_mode = OFF_MODE;
+//	pump.interact_ctrl_mode = OFF_MODE;
 	
 	electrical.camera_ctrl_mode = OFF_MODE;
-	electrical.camera_ctrl_mode = OFF_MODE;
+	electrical.rotate_ctrl_mode = OFF_MODE;
+	
+	electrical.safe_mode = OFF_MODE;
 	
 	help_executed();
-	bracket_executed();
-	magazine_executed();
-	throw_executed();
 	press_executed();
-	rotate_executed();
-	interact_executed();
-	
+	bracket_executed();
+	throw_executed();
+	bullet1_executed();
+	bullet2_executed();
+
 	camera_executed();
-	laser_executed();
+	rotate_executed();
+	
+	relay_safe_executed();
 	
 	relay.status[0]=0XAA;
 	relay.status[1]=0XBB;

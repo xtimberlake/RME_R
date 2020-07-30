@@ -23,23 +23,11 @@ void slip_init()
 		PID_struct_init(&pid_slip_pos, POSITION_PID, 15000, 3000,
 									400.0f,	0.001f,	0.0f	);  
  	
-		slip.mode = SLIP_UNKNOWN;
+		slip.state = SLIP_UNKNOWN;
 		slip.dist_offset_left  = 0;
 		slip.dist_offset_right = 0;
 		slip.dist_offset			 = 0;
 
-//	uplift.height_up_limit = HEIGHT_UP_LIMIT;
-//	uplift.height_give = HEIGHT_GIVE;
-//	uplift.height_get = HEIGHT_GET;
-//	uplift.height_aim = HEIGHT_AIM;
-//	uplift.height_normal = HEIGHT_NORMAL;
-//	
-//	uplift.height_climb_up_hang = 	HEIGHT_CLIMB_UP_HANG;
-//	uplift.height_climb_up_zhuzi = HEIGHT_CLIMB_UP_ZHUZI;
-//	uplift.height_climb_on_top = HEIGHT_CLIMB_ON_TOP;
-//	uplift.height_climb_down_hang = HEIGHT_CLIMB_DOWN_HANG;
-////	uplift.height_climb_down_zhuzi = HEIGHT_CLIMB_ON_TOP;
-//	uplift.height_climb_retract = HEIGHT_CLIMB_RETRACT;
 }
 
 void slip_task(void const *argu)
@@ -49,14 +37,14 @@ void slip_task(void const *argu)
 	
 	slip_get_position_flag(); //获取当前总体位置
 	
-	if(slip.mode != SLIP_KNOWN && slip.ctrl_mode == SLIP_AUTO) //自动模式且未知状态下进行校准
+	if(slip.state != SLIP_KNOWN && slip.ctrl_mode == SLIP_AUTO) //自动模式且未知状态下进行校准
 	{
-		switch(slip.mode)
+		switch(slip.state)
 		{
 			case SLIP_UNKNOWN:
 			{
 				slip.dist_offset = 0;
-				slip. mode = SLIP_CALIBRA;
+				slip. state = SLIP_CALIBRA;
 		
 			}break;
 			case SLIP_CALIBRA:
@@ -91,8 +79,7 @@ void slip_task(void const *argu)
 						slip.dist_fdb =  moto_slip.total_ecd/slip_ratio  -  slip.dist_offset;   //获得校准后的位置信息
 						slip.dist_ref =  slip.dist_fdb;
 						slip.dist_ref = 0;			//设置目标位置为中间
-						slip.mode = SLIP_KNOWN; //进入已知状态
-					
+						slip.state = SLIP_KNOWN; //进入已知状态
 					}
 									
 					
@@ -123,7 +110,6 @@ void slip_task(void const *argu)
 					} break;
 		case SLIP_AUTO:
 					{
-						
 						slip.spd_ref = pid_calc(&pid_slip_pos,slip.dist_fdb,slip.dist_ref); //位置环
 						slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,slip.spd_ref); //速度环
 						
@@ -140,15 +126,15 @@ void slip_task(void const *argu)
 
 	
 	motor_cur.slip_cur = slip.current;
-	osSignalSet(can_msg_send_task_t, ROTATE_MOTOR_MSG_SEND); //发送至can2
+	osSignalSet(can_msg_send_task_t, SLIP_MOTOR_MSG_SEND); //发送至can2
 
 }
 
 void slip_get_position_flag()
 {
-	if(slip.mode != SLIP_KNOWN) {slip.position_flag = NEED_CALIBRATED ;slip.mode = SLIP_UNKNOWN;} //未校准处于未确定状态
-	else
-	{
+//	if(slip.state != SLIP_KNOWN) {slip.position_flag = NEED_CALIBRATED ;slip.state = SLIP_UNKNOWN;} //未校准处于未确定状态
+//	else
+//	{
 		//处于中间子弹位置
 		if (fabs((double)(slip.dist_fdb-slip.center_bullet_REF))<0.5) 
 		{
@@ -164,9 +150,8 @@ void slip_get_position_flag()
 		}
 		else
 		{
-			slip.position_flag = UNCERTAIN ;
-		
+			slip.position_flag = UNCERTAIN ;		
 		}
 
-	}
+//	}
 }

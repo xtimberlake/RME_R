@@ -17,7 +17,7 @@
 #endif
 
 #include "stm32f4xx_hal.h"
-#include "bsp_pump.h"
+
 #define CHASSIS_PERIOD 10
 #define MAX_WHEEL_RPM   9000		//底盘电机转速限制极限
 
@@ -27,11 +27,12 @@ typedef enum
   CHASSIS_STOP   ,
   CHASSIS_REMOTE_NORMAL ,
 	CHASSIS_REMOTE_SLOW		,
+	CHASSIS_RC_NEAR		,
 	
   CHASSIS_KB_NEAR   ,//贴墙自动模式
 	CHASSIS_KB_LIMIT_TOUCH	,
 	
-  CHASSIS_DODGE  ,
+
   CHASSIS_KB  ,
 } chassis_mode_e;
 

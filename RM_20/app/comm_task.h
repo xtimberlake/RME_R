@@ -17,6 +17,7 @@
 #define UPLIFT_MOTOR_MSG_SEND   ( 1 << 3 )
 #define CHASSIS_MOTOR_MSG_SEND  ( 1 << 4 )
 #define ROTATE_MOTOR_MSG_SEND		( 1 << 5 )
+#define SLIP_MOTOR_MSG_SEND			( 1 << 6 )
 
 /* motor current parameter structure */
 typedef struct

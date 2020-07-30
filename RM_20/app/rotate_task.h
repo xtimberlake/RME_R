@@ -8,14 +8,21 @@
 
 #include "stm32f4xx_hal.h"
 
-#define ROTATE_PERIOD 10
+#define ROTATE_PERIOD 4
 
 typedef enum
 {
-	ROTATE_SAFE_MODE,
-	ROTATE_AUTO_MODE,
-	ROTATE_ADJUST_MODE,
-	
+	ROTATE_UNKNOWN,		//未知态
+	ROTATE_CALIBRA,		//校准	
+	ROTATE_KNOWN			//校准完成
+} rotate_init_e;	//横移机构
+
+typedef enum
+{
+	ROTATE_STOP,
+	ROTATE_ON,
+	ROTATE_OFF,
+	ROTATE_STAY
 }rotate_mode_t;
 
 typedef enum
@@ -29,16 +36,21 @@ typedef enum
 
 typedef struct
 {	
+	rotate_init_e		state;
 	rotate_mode_t   ctrl_mode;
+	
   int16_t         current[2]; //赋予两个电机相同的电流值
+	
+	float						ecd_ref;	//设定值
+	float						ecd_fdb;	//反馈值
+	float						ecd_offset;//补偿
+	float						ecd_ref_slope;//斜坡
+	
 	int16_t					spd_ref; //只使用一边的电机反馈
-	int32_t 				up_limit;
-	int32_t 				down_limit;
 	int32_t 				bullet_angle_ref;
 	int32_t 				loose_angle_ref;
+	int32_t					stay_angle_ref;
 	int32_t  				init_angle_ref;
-	int32_t					angle_ref;	
-	int32_t					angle_fdb;	
 	rotate_position_flag_e position_flag;
 
 }rotate_t;
@@ -47,7 +59,7 @@ __ROTATE_TASK_EXT rotate_t rotate;
 
 void rotate_task(void const *argu);
 
-
+void rotate_init(void);
 
 
 

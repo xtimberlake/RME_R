@@ -118,7 +118,7 @@ void reset_bullet()
 											 {
 												 pump.press_ctrl_mode = OFF_MODE;
 												 pump.bracket_ctrl_mode = OFF_MODE; 
-												 pump.rotate_ctrl_mode = OFF_MODE; 										 
+												 electrical.rotate_ctrl_mode = OFF_MODE; 										 
 												 slip.dist_ref = slip.center_bullet_REF;
 												 if(slip.position_flag == CENTER_BULLET_POS) uplift.height_ref[0] = 0;
 												 else uplift.height_ref[0] = uplift.height_fdb[0]; //保持原来状态
@@ -128,7 +128,7 @@ void reset_bullet()
 
 		case ROTATE_GOING:
 											 {
-												 pump.rotate_ctrl_mode = OFF_MODE; 	
+												 electrical.rotate_ctrl_mode = OFF_MODE; 	
 												 pump.bracket_ctrl_mode = OFF_MODE; 
 												 fun_reset++;
 												 if(fun_reset>50) {fetch_step = SLIP_LEFT; fun_reset=0;}//回到任一位置	
@@ -143,7 +143,7 @@ void reset_bullet()
 
 		case ROTATE_BACK:
 											 { //爪子收回步骤，就直接进行到底，完成后面的取弹步骤
-												 pump.rotate_ctrl_mode = OFF_MODE;
+												 electrical.rotate_ctrl_mode = OFF_MODE;
 												 fun_reset++;
 												 if(fun_reset>20) {fetch_step = THROWING; fun_reset=0;}//下一步
 											 } break;
@@ -156,7 +156,7 @@ void reset_bullet()
 											 } break;
 		case BRACKET_GOING:
 											 {
-												 pump.rotate_ctrl_mode = OFF_MODE; 	
+												 electrical.rotate_ctrl_mode = OFF_MODE; 	
 												 pump.bracket_ctrl_mode = OFF_MODE; 
 												 fun_reset++;
 												 if(fun_reset>50) {fetch_step = SLIP_LEFT; fun_reset=0;}//回到任一位置	
@@ -195,7 +195,7 @@ void single_fetch_bullet()
 			}break;
 		case ROTATE_GOING:
 			{
-				pump.rotate_ctrl_mode = ON_MODE;
+				electrical.rotate_ctrl_mode = ON_MODE;
 				if(fun_cnt > 20)
 				{
 					fetch_step = PRESSING;
@@ -214,7 +214,7 @@ void single_fetch_bullet()
 		case ROTATE_BACK:
 			{
 
-				pump.rotate_ctrl_mode = OFF_MODE;
+				electrical.rotate_ctrl_mode = OFF_MODE;
 				if(fun_cnt > 20)
 				{
 					fetch_step = THROWING;
@@ -270,7 +270,7 @@ void single_second_fetch_bullet(void)
 		case ROTATE_GOING:
 			{
 				#if(E_rotate)
-				rotate.angle_ref = rotate.bullet_angle_ref;
+				rotate.ecd_fdb = rotate.bullet_angle_ref;
 				if(rotate.position_flag == ROTATE_BULLET_POS_FLAG) 
 				{
 					fetch_step = PRESSING;
@@ -308,7 +308,7 @@ void single_second_fetch_bullet(void)
 		case ROTATE_BACK:
 			{
 				#if(E_rotate)
-				rotate.angle_ref = rotate.loose_angle_ref;
+				rotate.ecd_fdb = rotate.loose_angle_ref;
 				if(rotate.position_flag == ROTATE_LOOSE_POS_FLAG)
 				{
 				  fetch_step = THROWING;

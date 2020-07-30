@@ -100,9 +100,9 @@ __PID_EXT pid_t pid_uplift_height[2];
 //校准
 __PID_EXT pid_t pid_calibre_spd[2];		
 __PID_EXT pid_t pid_calibre_height[2];
-//收腿
-__PID_EXT pid_t pid_retract_spd[2];		
-__PID_EXT pid_t pid_retract_height[2];
+////收腿
+//__PID_EXT pid_t pid_retract_spd[2];		
+//__PID_EXT pid_t pid_retract_height[2];
 		
 __PID_EXT pid_t	pid_pit_ecd;
 __PID_EXT pid_t	pid_yaw_ecd;

@@ -49,8 +49,10 @@ void can_msg_send_task(void const *argu)
 				send_rotate_motor_ctrl_message(motor_cur.rotate_cur,motor_cur.slip_cur);
 			}
 		}
+		
 	}
 }
+
 
 /**
   * @brief send_chassis_motor_ctrl_message
@@ -83,7 +85,3 @@ void send_rotate_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur)
 	
 }
 
-void send_chassis_Judgement_power_message(uint16_t chassis_power,uint16_t chassis_power_buffer)
-{
-  //send_chassis_power(chassis_power,chassis_power_buffer);
-}

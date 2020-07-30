@@ -33,7 +33,7 @@ typedef struct
 	int8_t status[8];//串口发送气阀和电气状态 前两个字节表示数据帧头
 	uint8_t gas_status;//气阀控制位
 	uint8_t electrical_status; //电气控制位
-	uint16_t dis1;
+	uint16_t dis1;		//激光
 	uint16_t dis2;
 	uint8_t bullet_left;
 	uint8_t bullet_right;

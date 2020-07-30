@@ -37,7 +37,6 @@ typedef enum
 	GET_BULLET2_MODE,
 	GIVE_BULLET_MODE,
 	MOVE_MODE,
-	
 } func_mode_e;
 
 typedef enum 
@@ -48,25 +47,46 @@ typedef enum
 	CAMERA_HELP_MODE,
 }camera_mode_e;
 
+//typedef enum
+//{
+//	BULLET_N,
+//	BULLET_AIM,	//对位高度，若取后排则伸出悬架   对位在刚好取弹高度
+//	BULLET_STICK,
+//	BULLET_ROTATE_OUT,//转动爪子出去
+//	BULLET_PRESS,//夹取弹药箱	
+//	BULLET_GET,	//抬升弹药箱取出
+//	BULLET_WITHDRAW,//（取第二排模式）收回悬架
+//	BULLET_PUSH,		//倒子弹
+//	BULLET_THROW,		//丢弹药箱
+//	BULLET_LOOSE,		//松开
+//	BULLET_DONE_STAY,		//取弹完成停着
+//	BULLET_DONE_LEFT,
+//	BULLET_DONE_RIGHT,
+//	BULLET_RESET,		//校准
+
+//} get_bullet_mode_e;//用状态描述整个取弹流程
+
 typedef enum
 {
-	BULLET_N,
-	BULLET_AIM,	//对位高度，若取后排则伸出悬架   对位在刚好取弹高度
-	BULLET_STICK,
-	BULLET_ROTATE_OUT,//转动爪子出去
-	BULLET_PRESS,//夹取弹药箱	
-	BULLET_GET,	//抬升弹药箱取出
-	BULLET_WITHDRAW,//（取第二排模式）收回悬架
-	BULLET_PUSH,		//倒子弹
-	BULLET_THROW,		//丢弹药箱
-	BULLET_LOOSE,		//松开
-	BULLET_DONE_STAY,		//取弹完成停着
+	BULLET_AIM,					//贴墙后左右对位,夹弹爪子打开,高度提高到取弹高度
+	
+	BULLET_ROTATE_INIT,	//转动爪子到中值
+	BULLET_ROTATE_OUT,	//转动爪子出去
+	BULLET_PRESS,				//夹取弹药箱
+	BULLET_PUSH,				//倒子弹
+	BULLET_THROW,				//丢弹药箱
+	
+	BULLET_DONE,					//取弹完成
+	BULLET_DONE_MIDDLE,		//取弹完成停止位置
 	BULLET_DONE_LEFT,
 	BULLET_DONE_RIGHT,
-	BULLET_RESET,		//校准
-
-} get_bullet_mode_e;//用状态描述整个取弹流程
-
+	
+	BULLET_STRETCH,			//伸出悬架（取第二排模式）
+	BULLET_WITHDRAW,		//收回悬架
+	BULLET_GET,					//抬升弹药箱
+	
+	BULLET_RESET,				//校准
+}		get_bullet_mode_e;//用状态描述整个取弹流程
 
 typedef enum
 {
@@ -99,17 +119,19 @@ typedef enum
 
 typedef struct
 {
-	get_bullet_mode_e ctrl_mode;
+	get_bullet_mode_e 	ctrl_mode;
+	uint8_t	line_flag;
 	uint8_t step_flag;		//单步执行的flag
 	uint8_t reset_flag;
 	uint8_t loosetime;
 	float dis_ref1;
 	float dis_ref2;
+	int handle_ro_times;
 } get_bullet_t;
 
 typedef struct
 {
-//	get_bullet_mode_e ctrl_mode;
+	get_bullet_mode_e ctrl_mode;
 	uint8_t step_flag;		//单步执行的flag
 	uint8_t reset_flag;
 	uint8_t jdq;
@@ -136,13 +158,13 @@ void mode_switch_task(void const *argu);
 void get_main_ctrl_mode(void);
 
 void get_global_last_mode(void);
-
+void get_bullet_task(void);//
 void rc_move_handle(void);
 void rc_bullet_handle(void);
 void rc_climb_handle(void);
 void kb_handle(void);
-void get_bullet_ctrl_mode(void);
 void safety_mode_handle(void);
 void climb_ctrl_mode(void);
+void get_bullet_ctrl_mode(void);
 
 #endif

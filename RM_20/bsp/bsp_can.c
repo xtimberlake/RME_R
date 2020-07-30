@@ -16,6 +16,7 @@
 #include "chassis_task.h"
 #include "status_task.h"
 #include "slip_task.h"
+#include "bsp_T_imu.h"
 uint32_t j;
 
 CAN_TxHeaderTypeDef Tx1Message;
@@ -62,8 +63,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				get_moto_offset(&moto_uplift[i], &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_uplift[i], &hcan1,CAN_Rx_data);
 				status.uplift_status[i] = 1;
 			}
-			break;
-			
+			break;			
 			default: {}break;
 		};
 	}
@@ -84,7 +84,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				status.rotate_status[n] = 1;
 			}				
 			break;
-			case CAN_3508_SL_ID:
+			case CAN_3508_SL_ID://ºáÒÆµç»úslip
 			{
 				moto_slip.msg_cnt++ <=50 ?
 				get_moto_offset(&moto_slip, &hcan1,CAN_Rx_data) : encoder_data_handler(&moto_slip, &hcan1,CAN_Rx_data);
@@ -108,8 +108,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				moto_yaw.last_total_ecd = moto_yaw.total_ecd;
 			}
 			break;
-
-
+			case TIMU_PALSTANCE_ID:
+			case TIMU_ANGLE_ID:
+			{
+				T_imu_calcu(Rx2Message.StdId,CAN_Rx_data);
+			}
+			break;
 			default: {}break;
 		}
 	}

@@ -58,6 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define DOWN_LIMIT2_Pin GPIO_PIN_0
+#define DOWN_LIMIT2_GPIO_Port GPIOA
 #define DOWN_LIMIT1_Pin GPIO_PIN_1
 #define DOWN_LIMIT1_GPIO_Port GPIOA
 #define BLUE_TX_Pin GPIO_PIN_2
@@ -86,8 +88,6 @@ void Error_Handler(void);
 #define DBUS_TX_GPIO_Port GPIOA
 #define DBUS_RX_Pin GPIO_PIN_10
 #define DBUS_RX_GPIO_Port GPIOA
-#define DOWN_LIMIT2_Pin GPIO_PIN_6
-#define DOWN_LIMIT2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
