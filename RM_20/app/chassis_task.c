@@ -26,6 +26,8 @@
 
 chassis_t chassis;
 
+#define chassis_ratio (820.0f)
+
 extern TaskHandle_t can_msg_send_task_t;
 
 /**
@@ -35,7 +37,11 @@ extern TaskHandle_t can_msg_send_task_t;
 	* @note  
   */
 void chassis_task(void const *argu)
-{
+{ 
+	
+	chassis.cnt_fdb =  moto_chassis[0].total_ecd/chassis_ratio  -  chassis.cnt_offset;
+	
+	
 	switch(chassis.ctrl_mode)
 	{
 		case CHASSIS_STOP:

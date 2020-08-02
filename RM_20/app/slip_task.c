@@ -8,20 +8,26 @@
 #include "remote_msg.h"
 #include "math.h"
 #include "keyboard_handle.h"
+#include "data_processing.h"
 
 
-#define slip_ratio (8192.0f)
+#define slip_ratio (820.0f)
+
+uint16_t thres_hold=130;
 
 extern TaskHandle_t can_msg_send_task_t;
 
 void slip_init()
 {
 		//横移的PID 
-		PID_struct_init(&pid_slip_spd, POSITION_PID, 7000, 3000,
-									15.0f,	0.001f,	0.5f	);  
+		PID_struct_init(&pid_slip_spd, POSITION_PID, 6000, 3000,
+									0.0f,	0.0f,	0.0f	);  
 		
-		PID_struct_init(&pid_slip_pos, POSITION_PID, 15000, 3000,
-									400.0f,	0.001f,	0.0f	);  
+		PID_struct_init(&pid_slip_pos, POSITION_PID, 6000, 3000,
+									0.0f,	0.0f,	0.0f	);  
+	
+//	  PID_struct_init(&pid_slip_single, POSITION_PID, 10000, 4000,
+//	                100.0f, 2.0f, 0.0f);
  	
 		slip.state = SLIP_UNKNOWN;
 		slip.dist_offset_left  = 0;
@@ -49,37 +55,36 @@ void slip_task(void const *argu)
 			}break;
 			case SLIP_CALIBRA:
 			{
-					if(fabs(slip.dist_offset_left)<0.01) 	//左边校正未确定
+					static int handle_lt_times=0;
+					if(fabs(slip.dist_offset)<0.01) 	//左边校正未确定
 					{
-						slip.current = -1000;
-						static int handle_lt_times=0;
+						
+						slip.current = -1500;
+						
 						handle_lt_times++;
+						
+						
 						if(handle_lt_times>30 && moto_slip.speed_rpm>-100) //检测堵转
 						{
-						 slip.dist_offset_left=moto_slip.total_ecd/slip_ratio; //获得左边校准数值
-						 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
+							handle_lt_times=0;
+						 slip.dist_offset=moto_slip.total_ecd/slip_ratio; //获得左边校准数值
+						 slip.current = 0; //电机停转
 						}
-					
-					}
-					else if(fabs(slip.dist_offset_right)<0.01) //右边校正未确定
-					{
-						slip.current = 1000;
-						static int handle_rg_times=0;
-						handle_rg_times++;
-						if(handle_rg_times>30 && moto_slip.speed_rpm<100) //检测堵转
-						{
-						 slip.dist_offset_right=moto_slip.total_ecd/slip_ratio; //获得右边校准数值
-						 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
-						}
+						
 					
 					}
 					else //校准成功
 					{
-						slip.dist_offset = (slip.dist_offset_left + slip.dist_offset_right)/2 ; //计算最终offset，零点为中间位置
+						handle_lt_times++;
+						slip.current = 0;
+						if(handle_lt_times>30)
+						{
 						slip.dist_fdb =  moto_slip.total_ecd/slip_ratio  -  slip.dist_offset;   //获得校准后的位置信息
-						slip.dist_ref =  slip.dist_fdb;
-						slip.dist_ref = 0;			//设置目标位置为中间
+						slip.dist_ref =  49.35f;
+						handle_lt_times=0;
 						slip.state = SLIP_KNOWN; //进入已知状态
+						}
+						
 					}
 									
 					
@@ -112,6 +117,9 @@ void slip_task(void const *argu)
 					{
 						slip.spd_ref = pid_calc(&pid_slip_pos,slip.dist_fdb,slip.dist_ref); //位置环
 						slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,slip.spd_ref); //速度环
+						
+						//位置单环
+						//slip.current = pid_calc_integral_exp(&pid_slip_single,slip.dist_fdb,slip.dist_ref);
 						
 					}break;
 		case SLIP_KEYBOARD:
@@ -154,4 +162,52 @@ void slip_get_position_flag()
 		}
 
 //	}
+}
+
+float pid_calc_integral_exp(pid_t* pid, float get, float set)
+	{
+    pid->get[NOW] = get;
+    pid->set[NOW] = set;
+    pid->err[NOW] = set - get;	//set - measure
+    if (pid->max_err != 0 && ABS(pid->err[NOW]) >  pid->max_err  )
+		return 0;
+	if (pid->deadband != 0 && ABS(pid->err[NOW]) < pid->deadband)
+		return 0;
+    
+    if(pid->pid_mode == POSITION_PID) //位置式p
+    {
+        pid->pout = pid->p * pid->err[NOW];
+			
+				if(ABS(pid->err[NOW])>10)
+				pid->iout = 0;
+				else
+        pid->iout += pid->i * pid->err[NOW];
+			
+        pid->dout = pid->d * (pid->err[NOW] - pid->err[LAST] );
+        abs_limit(&(pid->iout), pid->IntegralLimit,0);
+        pid->pos_out = pid->pout + pid->iout + pid->dout;
+        abs_limit(&(pid->pos_out), pid->MaxOutput,0);
+        pid->last_pos_out = pid->pos_out;	//update last time 
+    }
+    else if(pid->pid_mode == DELTA_PID)//增量式P
+    {
+        pid->pout = pid->p * (pid->err[NOW] - pid->err[LAST]);
+        pid->iout = pid->i * pid->err[NOW];
+        pid->dout = pid->d * (pid->err[NOW] - 2*pid->err[LAST] + pid->err[LLAST]);
+        
+        abs_limit(&(pid->iout), pid->IntegralLimit,0);
+        pid->delta_u = pid->pout + pid->iout + pid->dout;
+        pid->delta_out = pid->last_delta_out + pid->delta_u;
+        abs_limit(&(pid->delta_out), pid->MaxOutput,0);
+        pid->last_delta_out = pid->delta_out;	//update last time
+    }
+    
+    pid->err[LLAST] = pid->err[LAST];
+    pid->err[LAST] = pid->err[NOW];
+    pid->get[LLAST] = pid->get[LAST];
+    pid->get[LAST] = pid->get[NOW];
+    pid->set[LLAST] = pid->set[LAST];
+    pid->set[LAST] = pid->set[NOW];
+    return pid->pid_mode==POSITION_PID ? pid->pos_out : pid->delta_out;
+//	
 }

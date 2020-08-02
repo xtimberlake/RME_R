@@ -7,6 +7,7 @@
 #endif
 
 #include "stm32f4xx_hal.h"
+#include "pid.h"
 
 #define SLIP_PERIOD 10
 
@@ -66,5 +67,6 @@ __SLIP_TASK_EXT slip_t slip;
 void slip_task(void const *argu);
 void slip_get_position_flag(void);
 void slip_init(void);
+float pid_calc_integral_exp(pid_t* pid, float get, float set);
 
 #endif

@@ -156,7 +156,7 @@ __MODESW_TASK_EXT int camera_flag;	//决定车前后方向
 void mode_switch_task(void const *argu);
 
 void get_main_ctrl_mode(void);
-
+void keyborad_bullet_handle_controller(void);
 void get_global_last_mode(void);
 void get_bullet_task(void);//
 void rc_move_handle(void);

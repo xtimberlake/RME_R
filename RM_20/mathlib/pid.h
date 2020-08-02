@@ -118,9 +118,14 @@ __PID_EXT pid_t pid_yaw_gyro;
 __PID_EXT pid_t	pid_slip_spd;
 __PID_EXT pid_t pid_slip_pos;
 
+__PID_EXT pid_t pid_slip_single;
+
 //取弹旋转电机
 __PID_EXT pid_t	pid_rotate_spd;
 __PID_EXT pid_t pid_rotate_pos;
+
+__PID_EXT pid_t	pid_rotate_filter_spd;
+__PID_EXT pid_t pid_rotate_filter_pos;
 
 #endif
 

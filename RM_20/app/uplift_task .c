@@ -86,47 +86,7 @@ void uplift_task(void const *argu)
 			}break;
 			case UPLIFT_CALIBRA:
 			{
-//				//如果机械那边靠谱的话就删掉
-//				uplift.current[0]=	0;
-//				uplift.current[1]=	0;
-//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT1_Pin))
-//				{
-//					if(uplift.calibra_flag1)
-//					{
-//						uplift.height_calibra_offset[0] = uplift.height_fdb[0];
-//						uplift.calibra_flag1=0;
-//					}
-//					uplift.spd_ref[0] = pid_calc(&pid_uplift_height[0],uplift.height_fdb[0],uplift.height_calibra_offset[0]); //高度环
-//					uplift.current[0] = pid_calc(&pid_uplift_spd[0],moto_uplift[0].speed_rpm,uplift.spd_ref[0]); //速度环
-//				}
-//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT2_Pin))
-//				{
-//					if(uplift.calibra_flag2)
-//					{
-//						uplift.height_calibra_offset[1] = uplift.height_fdb[1];
-//						uplift.calibra_flag2=0;
-//					}					
-//					uplift.spd_ref[1] = pid_calc(&pid_uplift_height[1],uplift.height_fdb[1],uplift.height_calibra_offset[1]); //高度环
-//					uplift.current[1] = pid_calc(&pid_uplift_spd[1],moto_uplift[1].speed_rpm,uplift.spd_ref[1]); //速度环
-//				}				
-//				if(HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT1_Pin)&&HAL_GPIO_ReadPin(GPIOA,DOWN_LIMIT2_Pin))
-//				{
-//					//校准成功
-//					uplift.height_offset[0] = moto_uplift[0].total_ecd/uplift_ratio ;	
-//					uplift.height_offset[1] = moto_uplift[1].total_ecd/uplift_ratio ;	
-//					uplift.state=UPLIFT_KNOWN;
-//				}
-				uplift.current[0] = 0;
-				uplift.current[1] = 0;
-				static int handle_up_times=0;
-				handle_up_times++;
-				if(handle_up_times>30 && moto_uplift[0].speed_rpm>-100) //检测堵转(方向未决定)
-				{
-					uplift.height_offset[0] = moto_uplift[0].total_ecd/uplift_ratio ;	
-					uplift.height_offset[1] = moto_uplift[1].total_ecd/uplift_ratio ;	
-					uplift.state = UPLIFT_KNOWN;
-//				 slip.current = pid_calc(&pid_slip_spd,moto_slip.speed_rpm,0); //电机停转
-				}
+
 			}break;
 			case UPLIFT_KNOWN:
 			{
@@ -140,7 +100,7 @@ void uplift_task(void const *argu)
 		{
 			case UPLIFT_ADJUST:
 			{
-//				uplift.height_ref[0] -= 0.002*rc.ch5; 
+
 				uplift.height_ref[0] -= 0.001*rc.ch5; 
 				uplift.height_ref[1] =  -uplift.height_ref[0];
 				
@@ -196,9 +156,5 @@ void uplift_task(void const *argu)
 	osSignalSet(can_msg_send_task_t, UPLIFT_MOTOR_MSG_SEND);
 }
 
-			//设置上下限
-//			if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;
-//			if(uplift.height_ref[1]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
-//			if(uplift.height_ref[0]>=HEIGHT_UP_LIMIT)	uplift.height_ref[0] = uplift.height_up_limit;
-//			if(uplift.height_ref[1]>=HEIGHT_UP_LIMIT)	uplift.height_ref[1] = uplift.height_up_limit;
+
 

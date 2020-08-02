@@ -197,6 +197,8 @@ void BSP_init()
 
 	bullet.loosetime = 30; //ÈÓ×Óµ¯Ê±¼ä
 	
+	rotate.ctrl_mode= ROTATE_STOP;
+	
 }
 /* USER CODE END 4 */
 

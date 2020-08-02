@@ -61,9 +61,11 @@ typedef struct
   int16_t         wheel_spd_fdb[4];//反馈值
   int16_t         wheel_spd_ref[4];//目标值
 
-  int16_t         position_ref;
-	float 					position_error;
 	float 					dis_ref;
+	
+	float           cnt_ref;
+	float           cnt_fdb;
+	float           cnt_offset;
 	
   float           target_vx; // forward/back
   float           target_vy; // left/right

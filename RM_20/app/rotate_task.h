@@ -20,9 +20,8 @@ typedef enum
 typedef enum
 {
 	ROTATE_STOP,
-	ROTATE_ON,
-	ROTATE_OFF,
-	ROTATE_STAY
+	ROTATE_AUTO,
+	
 }rotate_mode_t;
 
 typedef enum
@@ -46,7 +45,11 @@ typedef struct
 	float						ecd_offset;//补偿
 	float						ecd_ref_slope;//斜坡
 	
+	float           cnt_ref;
+	float           cnt_fdb;
+	
 	int16_t					spd_ref; //只使用一边的电机反馈
+
 	int32_t 				bullet_angle_ref;
 	int32_t 				loose_angle_ref;
 	int32_t					stay_angle_ref;
@@ -55,9 +58,20 @@ typedef struct
 
 }rotate_t;
 
+typedef struct
+{
+	float beta;
+	float input;
+	float output;
+
+}rotate_first_order_fil_t;
+
 __ROTATE_TASK_EXT rotate_t rotate;
 
+float rotate_filter_cali(rotate_first_order_fil_t *p, float final_value);
+void filter_init(rotate_first_order_fil_t *p, float bt);
 void rotate_task(void const *argu);
+void keyborad_bullet_handle(void);
 
 void rotate_init(void);
 

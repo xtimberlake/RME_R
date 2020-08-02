@@ -9,8 +9,14 @@
 #include "cmsis_os.h"
 #include "math.h"
 #include "rotate_task.h"
+#include "pid.h"
+
 #define E_rotate 1 //数字1表示使用3508旋转电机,否则使用旋转气缸
 
+uint8_t safety_0=0;
+uint8_t ready_play=0;
+uint32_t handle_time=0;
+uint32_t handle_time2=0;
 
 /** 
   * @file 		keyboard_handle.c
@@ -20,15 +26,377 @@
   *	@author 	Taurus 2020
   */
 
-
+void safety_first()
+{
+	chassis.ctrl_mode = CHASSIS_STOP;
+	uplift.ctrl_mode = UPLIFT_STOP;
+  slip.ctrl_mode = SLIP_STOP;
+	rotate.ctrl_mode = ROTATE_STOP;
+	pump.press_ctrl_mode=OFF_MODE;
+	pump.throw_ctrl_mode=OFF_MODE;
+}
 void keyboard_handle()
 {
-	//未测试
-	//keyboard_chassis_ctrl(); //底盘部分键盘操作
+	//无遥控器的弟弟调试函数
+	
+	//模式选择：底盘、云台、抬升、横移、转动
+	taskENTER_CRITICAL();
+	
+	chassis.ctrl_mode = CHASSIS_STOP;
+	uplift.ctrl_mode = UPLIFT_STOP;
+	
+  
+	
+	if(safety_0==0) safety_first();
+	//else keyborad_bullet_handle();
+	else debug_slip();
+	
+	
+	taskEXIT_CRITICAL();
 	
 }
+void debug_slip()
+{
+	slip.ctrl_mode = SLIP_AUTO;
+	chassis.ctrl_mode = CHASSIS_STOP;
+	uplift.ctrl_mode = UPLIFT_STOP;
+	rotate.ctrl_mode = ROTATE_STOP;
+	pump.press_ctrl_mode=OFF_MODE;
+	pump.throw_ctrl_mode=OFF_MODE;
+	
+}
+//void keyborad_bullet_handle(void)
+//{	
+//	switch(bullet_setp)
+//	{
+//	case VOID_HANDLE:
+//	{
+//		if(ready_play)
+//		{
+//		slip.ctrl_mode = SLIP_AUTO;
+//		rotate.ctrl_mode = ROTATE_AUTO;
+//		if(slip.state==SLIP_KNOWN && rotate.state==ROTATE_KNOWN)
+//		{
+//		ready_play = 0;
+//		bullet_setp = LEFT_POS;
+//		}
+//	  }
+//	}break;
+//	
+//	case LEFT_POS:
+//	{
+//		if(ready_play==1)
+//		{
+//			slip.dist_ref = 0;
+//			rotate.cnt_ref = 600;
+//			if(fabs((double)(slip.dist_fdb))<1.6)
+//			{
+//				ready_play=0;
+//			  bullet_setp = ROT_OUT;
+//				pump.press_ctrl_mode = ON_MODE;
+//			}
+//		}
 
+//	}break;
+//	
+//	case ROT_OUT:
+//	{
+//		if(ready_play==1)
+//		{
+//			
+//			
+//			rotate.cnt_ref = 990;
+//			
+//			if(fabs((double)(rotate.cnt_fdb-990))<20)
+//			{
+//				ready_play=0;
+//				bullet_setp = ROT_OFF;
 
+//				handle_time=0;
+//			}
+//		}
+
+//	}break;
+//	case ROT_OFF:
+//	{
+//				if(ready_play==1)
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode =OFF_MODE;
+//			
+//			if(handle_time>90)
+//			{
+//			rotate.cnt_ref = 230;
+//			if(fabs((double)(rotate.cnt_fdb-230))<10)
+//			{
+//				ready_play=0;
+//				bullet_setp = TAKE_OFF;
+//				handle_time=0;
+//				handle_time2=0;
+//			}
+//			else if(fabs((double)(rotate.cnt_fdb-230))<35)
+//			{
+//				slip.dist_ref = 49.35f;
+//			}	
+//		}
+//			
+//		}
+
+//	}break;
+//	
+//	case TAKE_OFF:
+//	{
+//		
+//		slip.dist_ref = 49.35f;
+//			if(ready_play==1 )
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode = ON_MODE;
+//			if(handle_time>30)
+//			{
+//			rotate.cnt_ref = 500;
+//			
+//			if(fabs((float)(rotate.cnt_fdb-500))<50)
+//			{
+//				
+//				pump.throw_ctrl_mode = ON_MODE;
+//				
+//				if(pump.throw_ctrl_mode == ON_MODE)
+//				{
+//				handle_time2++;
+//				if(handle_time2>280)
+//				{
+//				pump.throw_ctrl_mode = OFF_MODE;
+//					handle_time2=0;
+//					handle_time=0;
+//					ready_play=0;
+//					bullet_setp = ROT_OUT_MID;
+//				
+//				}
+//			 }
+
+//				
+//			}
+//			}
+//			
+//		}
+//	
+//	}break;
+//	
+//	case ROT_OUT_MID:
+//	{
+//	slip.dist_ref = 49.35f;
+//	if(ready_play==1)
+//		{
+//			if(fabs((float)(slip.dist_fdb-49.35f))<2.0f)
+//			{
+//				rotate.cnt_ref = 990;
+//				
+//				if(fabs((double)(rotate.cnt_fdb-990))<20)
+//				{
+//					ready_play=0;
+//					bullet_setp = ROT_OFF_MID;
+
+//					handle_time=0;
+//				}
+//			}
+//		}
+//	
+//	}break;
+//	
+//	case ROT_OFF_MID:
+//	{
+//					if(ready_play==1)
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode =OFF_MODE;
+//			
+//			if(handle_time>90)
+//			{
+//			rotate.cnt_ref = 230;
+//			if(fabs((double)(rotate.cnt_fdb-230))<10)
+//			{
+//				ready_play=0;
+//				bullet_setp = TAKE_OFF_MID;
+//				handle_time=0;
+//			}
+//			else if(fabs((double)(rotate.cnt_fdb-230))<35)
+//			{
+//				slip.dist_ref = 98.72f;
+//			}	
+//		}
+//			
+//		}
+//	
+//	}break;
+//	
+//	case TAKE_OFF_MID:
+//	{
+//		slip.dist_ref = 98.72f;
+//					if(ready_play==1 )
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode = ON_MODE;
+//			if(handle_time>30)
+//			{
+//			rotate.cnt_ref = 500;
+//			
+//			if(fabs((double)(rotate.cnt_fdb-500))<50)
+//			{
+//				
+//				pump.throw_ctrl_mode = ON_MODE;
+//				
+//				if(pump.throw_ctrl_mode == ON_MODE)
+//				{
+//				handle_time2++;
+//				if(handle_time2>280)
+//				{
+//				pump.throw_ctrl_mode = OFF_MODE;
+//					handle_time2=0;
+//					handle_time=0;
+//					ready_play=0;
+//					bullet_setp = ROT_OUT_FINAL;
+//				
+//				}
+//			 }
+
+//				
+//			}
+//			}
+//			
+//		}
+
+//	}break;
+//	
+//	case ROT_OUT_FINAL:
+//	{
+//		
+//		if(ready_play==1)
+//		{
+//			slip.dist_ref = 98.72f;
+//			if(fabs((double)(slip.dist_fdb-98.72f))<2.0f)
+//			{
+//				rotate.cnt_ref = 990;
+//			
+//			if(fabs((double)(rotate.cnt_fdb-990))<20)
+//			{
+//				ready_play=0;
+//				bullet_setp = ROT_OFF_FINAL;
+
+//				handle_time=0;
+//			}
+//		}
+//			
+//		}
+//	}break;
+//	
+//	case ROT_OFF_FINAL:
+//	{
+//	
+//			if(ready_play==1)
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode =OFF_MODE;
+//			
+//			if(handle_time>90)
+//			{
+//			rotate.cnt_ref = 230;
+//			if(fabs((double)(rotate.cnt_fdb-230))<10)
+//			{
+//				ready_play=0;
+//				bullet_setp = TAKE_OFF_FINAL;
+//				handle_time=0;
+//			}
+//			else if(fabs((double)(rotate.cnt_fdb-230))<35)
+//			{
+//				slip.dist_ref = 49.35f;
+//			}	
+//		}
+//			
+//		}
+//	
+//	}break;
+//	
+//	case TAKE_OFF_FINAL:
+//	{
+//	
+//			slip.dist_ref = 49.35f;
+//					if(ready_play==1 )
+//		{
+//			handle_time++;
+//			pump.press_ctrl_mode = ON_MODE;
+//			if(handle_time>30)
+//			{
+//			rotate.cnt_ref = 500;
+//			
+//			if(fabs((double)(rotate.cnt_fdb-500))<50)
+//			{
+//				
+//				pump.throw_ctrl_mode = ON_MODE;
+//				
+//				if(pump.throw_ctrl_mode == ON_MODE)
+//				{
+//				handle_time2++;
+//				if(handle_time2>280)
+//				{
+//				pump.throw_ctrl_mode = OFF_MODE;
+//					handle_time2=0;
+//					handle_time=0;
+//					ready_play=0;
+//					bullet_setp = BULLET_HOLD_ON;
+//				
+//				}
+//			 }
+
+//				
+//			}
+//			}
+//		}
+//	
+//	}break;
+//	
+//	case BULLET_HOLD_ON:
+//	{
+//		if(ready_play)
+//		{	
+//			bullet_setp = BULLET_RESET_STEP;
+
+//			ready_play=0;
+//		}
+//			
+//	
+//	}break;
+//	case BULLET_RESET_STEP:
+//	{
+//		if(ready_play)
+//		{
+//		slip.state = SLIP_UNKNOWN;	
+//		bullet_setp = VOID_HANDLE;
+//			
+//			ready_play=0;
+//			handle_time2=0;
+//			handle_time=0;
+//			
+//	  safety_0=0; //手动安全模式
+//		}
+//		
+//	}break;
+//	
+//	case BULLET_SAFETY_MODE:
+//	{
+//		chassis.ctrl_mode = CHASSIS_STOP;
+//		uplift.ctrl_mode = UPLIFT_STOP;
+//		slip.ctrl_mode = SLIP_STOP;
+//		rotate.ctrl_mode = ROTATE_STOP;
+//		
+//		pump.press_ctrl_mode = OFF_MODE;
+//		pump.throw_ctrl_mode = OFF_MODE;
+
+//	}break;
+//	
+//	}
+
+//}
 
 /**
   * @brief      键盘控制底盘函数
@@ -58,7 +426,7 @@ void keyboard_chassis_ctrl()
   */
 void fetch_bullet_ctrl_fun()
 {
-
+	
 
 
 }
