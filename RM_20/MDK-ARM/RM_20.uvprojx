@@ -675,7 +675,7 @@
             <File>
               <FileName>bsp_JY901.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\RM_20\bsp\bsp_JY901.c</FilePath>
+              <FilePath>D:\project\STM32\Template\rm_code\my_test_code\RM_20\bsp\bsp_JY901.c</FilePath>
             </File>
           </Files>
         </Group>

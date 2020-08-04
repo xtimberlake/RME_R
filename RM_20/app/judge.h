@@ -22,6 +22,12 @@
 
 typedef enum 
 {
+	BLUE,
+	RED
+}CAMP;
+
+typedef enum 
+{
 	FRAME_HEADER         = 0,
 	CMD_ID               = 5,
 	DATA                 = 7,
@@ -383,7 +389,7 @@ typedef __packed struct
 { 
 	type_graphic_delete_e operate_tpye;
 	uint8_t layer;
-} ext_client_custom_graphic_delete_t;
+} ext_SendClientDelete_t;
 
 /* 
 	图形数据
@@ -405,6 +411,11 @@ typedef __packed struct
 	uint32_t end_y:11;
 } graphic_data_struct_t;
 
+typedef __packed struct 
+{ 
+	graphic_data_struct_t grapic_data_struct;
+	uint8_t data[30]; 
+} ext_SendClientStrings_t;
 
 //帧头  命令码   数据段头结构  数据段   帧尾
 //上传客户端
@@ -417,6 +428,8 @@ typedef __packed struct
 	uint16_t		 						FrameTail;//帧尾
 }ext_SendClientDraw_t;
 
+void determine_ID(void);
+int determine_red_blue(void);
 extern ext_power_heat_data_t	Power_Heat_Data;
 int Judge_Read_Data(uint8_t *ReadFromUsart);
 void judge_send_task(void const *argu);

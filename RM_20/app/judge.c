@@ -26,8 +26,16 @@ ext_shoot_data_t									Shoot_Data;
 ext_bullet_remaining_t						Bullet_Remaining;
 ext_rfid_status_t									RFID_Status;
 ext_dart_client_cmd_t							Dart_Client;
+
 ext_SendClientDraw_t							Judgesend_Data;
+ext_SendClientDelete_t						Delete_data;
+ext_SendClientStrings_t						Judgesend_strings_Data;	
 /******************************************************/
+
+int Color;//当前机器人的阵营
+uint8_t Robot_Self_ID;//当前机器人的ID
+uint16_t Judge_Client_ID;//发送者机器人对应的客户端ID
+
 
 /**
   * @brief  读取裁判数据函数，串口中断函数中直接调用进行读取
@@ -177,13 +185,16 @@ void judge_send_task(void const *argu)
 	Append_CRC8_Check_Sum((uint8_t *)CliendTxBuffer, sizeof(frame_header));//写入帧头CRC8校验码
 	
 	Judgesend_Data.CmdID = ID_robot_interract;	
-	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_DRAW_1_GRAPH_CMD_ID;//客户端绘制一个图形,官方固定
 
 	Judgesend_Data.drawFrameHeader.send_ID 	 = 3;//发送者的ID(步兵红3)
 	Judgesend_Data.drawFrameHeader.receiver_ID = 0x0103;//客户端的ID，只能为发送者机器人对应的客户端(步兵红3)
+//	Judgesend_Data.drawFrameHeader.send_ID 	 = Judge_Client_ID;//发送者的ID
+//	Judgesend_Data.drawFrameHeader.receiver_ID = Judge_Client_ID;//客户端的ID，只能为发送者机器人对应的客户端
 	
 	/*- 自定义内容 -*/
-	strcpy(Judgesend_Data.clientDraw.graphic_name,"abc");
+	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_DRAW_1_GRAPH_CMD_ID;//客户端绘制一个图形,官方固定
+//	strcpy(Judgesend_Data.clientDraw.graphic_name,"abc");
+	memcpy(&Judgesend_Data.clientDraw.graphic_name, "abc", sizeof("abc")); //命名
 	Judgesend_Data.clientDraw.operate_tpye=1;
 	Judgesend_Data.clientDraw.graphic_tpye=2;
 	Judgesend_Data.clientDraw.layer=1;
@@ -210,4 +221,70 @@ void judge_send_task(void const *argu)
 }
 
 
+/**
+  * @brief  判断自己红蓝方
+  * @param  void
+  * @retval RED   BLUE
+  * @attention  数据打包,打包完成后通过串口发送到裁判系统
+  */
+int determine_red_blue(void)
+{
+	Robot_Self_ID = Game_Robot_Status.robot_id;//读取当前机器人ID
+	
+	if(Game_Robot_Status.robot_id > 100)
+	{
+		return BLUE;
+	}
+	else 
+	{
+		return RED;
+	}
+}
+/**
+  * @brief  判断自身ID，选择客户端ID
+  * @param  void
+  * @retval RED   BLUE
+  * @attention  数据打包,打包完成后通过串口发送到裁判系统
+  */
+void determine_ID(void)
+{
+	Color = determine_red_blue();
+	if(Color == BLUE)
+	{
+		Judge_Client_ID = 0x0164 + (Robot_Self_ID-100);//计算客户端ID
+	}
+	else if(Color == RED)
+	{
+		Judge_Client_ID = 0x0100 + Robot_Self_ID;//计算客户端ID
+	}
+}
+
+/**
+  * @brief  客户端删除图形
+  * @param  类型选择：0: 空操作；
+	*										1: 删除图层；
+	*										2: 删除所有；
+  * @param  图层选择：0~9
+  * @attention  
+  */
+void data_pack_delete(type_graphic_delete_e type,uint8_t layer)
+{
+	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_DELETE_GRAPH_CMD_ID;
+	Delete_data.operate_tpye = type;
+	Delete_data.layer = layer;
+}
+/**
+  * @brief  客户端绘制字符
+  * @param  字体大小
+  * @param  字符长度
+  * @param  线条宽度
+  * @param  起点x坐标
+  * @param  起点y坐标
+  * @param  字符
+  * @attention  
+  */
+void data_pack_code()
+{
+	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_WRITE_STRINGS_CMD_ID;
+}
 #endif
