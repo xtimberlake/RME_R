@@ -18,5 +18,6 @@ extern ramp_function_source_t chassis_w_ramp;
 extern ramp_function_source_t chassis_mouse_w_ramp;
 
 void ramp_calc(ramp_function_source_t *ramp_source_type, float frame_period, float input, float max, float min);
+void ramp_calc_remain(ramp_function_source_t *ramp_source_type, float frame_period, float input);
 void chassis_ramp(void);
 #endif

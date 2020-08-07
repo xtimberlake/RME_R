@@ -3,7 +3,6 @@
 
 #include "bsp_can.h"
 #include "chassis_task.h"
-#include "gimbal_task.h"
 #include "string.h"
 #include "cmsis_os.h"
 #include "task.h"

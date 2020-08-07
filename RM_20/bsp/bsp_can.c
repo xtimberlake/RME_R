@@ -91,23 +91,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				status.slip_status = 1;
 			}
 			break;
-
-			case CAN_GM3510_PIT_ID:
-			{
-				moto_pit.msg_cnt++ <= 50 ? 
-				get_moto_offset(&moto_pit, &GIMBAL_CAN,CAN_Rx_data) : encoder_data_handler(&moto_pit, &GIMBAL_CAN,CAN_Rx_data);
-				moto_pit.speed_rpm = moto_pit.total_ecd - moto_pit.last_total_ecd;//速度解算
-				moto_pit.last_total_ecd = moto_pit.total_ecd;
-			}				
-			break;
-			case CAN_GM3510_YAW_ID:
-			{
-				moto_yaw.msg_cnt++ <= 50 ? 
-				get_moto_offset(&moto_yaw, &GIMBAL_CAN,CAN_Rx_data) : encoder_data_handler(&moto_yaw, &GIMBAL_CAN,CAN_Rx_data);
-				moto_yaw.speed_rpm = moto_yaw.total_ecd - moto_yaw.last_total_ecd;
-				moto_yaw.last_total_ecd = moto_yaw.total_ecd;
-			}
-			break;
 			case TIMU_PALSTANCE_ID:
 			case TIMU_ANGLE_ID:
 			{
@@ -195,40 +178,7 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq)
   * @param  3508 motor current
   */
 
-
-/**
-  * @brief  send calculated current to motor
-  * @param  gm3510 motor current
-  */
-void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq)
-{
-	uint8_t FreeTxNum = 0;  
-	
-	Tx2Message.StdId = 0x1ff;
-	Tx2Message.IDE 	 = CAN_ID_STD;
-	Tx2Message.RTR   = CAN_RTR_DATA;
-  Tx2Message.DLC   = 0x08;
-	
-	gimbal_tx_data.CAN_Tx_data[0] = yaw_iq >> 8;
-	gimbal_tx_data.CAN_Tx_data[1] = yaw_iq;
-	gimbal_tx_data.CAN_Tx_data[2] = pit_iq >> 8;
-	gimbal_tx_data.CAN_Tx_data[3] = pit_iq ;
-	gimbal_tx_data.CAN_Tx_data[4] = 0;
-	gimbal_tx_data.CAN_Tx_data[5] = 0;
-	gimbal_tx_data.CAN_Tx_data[6] = 0;
-	gimbal_tx_data.CAN_Tx_data[7] = 0;
-	
-	//查询发送邮箱是否为空
-	FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan2);  
-	while(FreeTxNum == 0) 
-	{  
-    FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan2);  
-  }
-	
-	HAL_CAN_AddTxMessage(&GIMBAL_CAN, &Tx2Message,gimbal_tx_data.CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX0);
-}
-
-void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq, int16_t sl_iq)
+void send_can2_cur(int16_t rt1_iq, int16_t rt2_iq, int16_t sl_iq)
 {
 	
 	uint8_t FreeTxNum = 0;  

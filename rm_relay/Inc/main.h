@@ -72,10 +72,14 @@ void Error_Handler(void);
 #define AIR_BULLET2_GPIO_Port GPIOB
 #define AIR_RESERVE_Pin GPIO_PIN_13
 #define AIR_RESERVE_GPIO_Port GPIOB
+#define Light_Pin GPIO_PIN_15
+#define Light_GPIO_Port GPIOB
 #define YAW_PWM_Pin GPIO_PIN_15
 #define YAW_PWM_GPIO_Port GPIOA
 #define PIT_PWM_Pin GPIO_PIN_3
 #define PIT_PWM_GPIO_Port GPIOB
+#define magazine_Pin GPIO_PIN_4
+#define magazine_GPIO_Port GPIOB
 #define LED_Pin GPIO_PIN_9
 #define LED_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

@@ -9,34 +9,20 @@
 #include "remote_msg.h"
 #include "math.h"
 
-#include "arm_math.h"
 
 #define rotate_ratio (82.0f)
 
-rotate_first_order_fil_t rotate_off_filter;
 
 extern TaskHandle_t can_msg_send_task_t;
 void rotate_init()
 {
 		//旋转电机的PID 速度pi/位置p(d)
 		PID_struct_init(&pid_rotate_spd, POSITION_PID, 10000, 1000,
-									28.0f,	0.001f,	0.0f	);  
-		PID_struct_init(&pid_rotate_pos, POSITION_PID, 8000, 500,
+									32.0f,	0.46f,	0.0f	);  
+		PID_struct_init(&pid_rotate_pos, POSITION_PID, 180, 500,
 									0.5f,	0.0f,	0.0f	);  
 }
 
-void filter_init(rotate_first_order_fil_t *p, float bt)
-{
-	p->output = 0;
-	p->input = 0;
-	p->beta = bt;
-}
-
-float rotate_filter_cali(rotate_first_order_fil_t *p, float final_value)
-{
-	p->output = p->beta*p->output + (1-p->beta)*final_value; 
-  return p->output;
-}
 
 void rotate_task(void const *argu)
 {
@@ -56,8 +42,9 @@ void rotate_task(void const *argu)
 				rotate.current[1] = -500;
 				
 				if(handle_lt_times_rotate>10)
-				{rotate.state = ROTATE_CALIBRA;
-				handle_lt_times_rotate=0;
+				{
+					rotate.state = ROTATE_CALIBRA;
+					handle_lt_times_rotate=0;
 				}
 				handle_lt_times_rotate++;
 			}break;
@@ -116,10 +103,5 @@ void rotate_task(void const *argu)
 	
 		memcpy(motor_cur.rotate_cur, rotate.current, sizeof(rotate.current));
 		osSignalSet(can_msg_send_task_t, ROTATE_MOTOR_MSG_SEND);
- }//气阀板版,用过主板调试
-
-
-
-
-			
+ }
 

@@ -15,7 +15,6 @@
 #include "main.h"
 #include "bsp_pump.h"
 #include "chassis_task.h"
-#include "gimbal_task.h"
 #include "relay_task.h"
 #include "bsp_uart.h"
 
@@ -70,11 +69,11 @@ void camera_executed()
 	else	camera_off();
 }//切换倒车摄像头视角
 
-void rotate_executed()
+void magazine_executed()
 {
-	if(electrical.rotate_ctrl_mode ==ON_MODE)	rotate_on();
-	else	rotate_off();
-}//切换气阀板控制旋转电机模式
+	if(electrical.magazine_ctrl_mode ==ON_MODE)	magazine_on();
+	else	magazine_off();
+}//切换弹仓模式
 
 void relay_safe_executed()
 {
@@ -95,7 +94,7 @@ void pump_init()
 //	pump.interact_ctrl_mode = OFF_MODE;
 	
 	electrical.camera_ctrl_mode = OFF_MODE;
-	electrical.rotate_ctrl_mode = OFF_MODE;
+	electrical.magazine_ctrl_mode = OFF_MODE;
 	
 	electrical.safe_mode = OFF_MODE;
 	
@@ -107,7 +106,7 @@ void pump_init()
 	bullet2_executed();
 
 	camera_executed();
-	rotate_executed();
+	magazine_executed();
 	
 	relay_safe_executed();
 	

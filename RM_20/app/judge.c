@@ -193,7 +193,7 @@ void judge_send_task(void const *argu)
 	
 	/*- 自定义内容 -*/
 	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_DRAW_1_GRAPH_CMD_ID;//客户端绘制一个图形,官方固定
-//	strcpy(Judgesend_Data.clientDraw.graphic_name,"abc");
+//	strcpy(Judgesend_Data.clientDraw.graphic_name,"abc");//命名
 	memcpy(&Judgesend_Data.clientDraw.graphic_name, "abc", sizeof("abc")); //命名
 	Judgesend_Data.clientDraw.operate_tpye=1;
 	Judgesend_Data.clientDraw.graphic_tpye=2;
@@ -286,5 +286,6 @@ void data_pack_delete(type_graphic_delete_e type,uint8_t layer)
 void data_pack_code()
 {
 	Judgesend_Data.drawFrameHeader.data_cmd_id = CLIENT_WRITE_STRINGS_CMD_ID;
+	//没写完
 }
 #endif

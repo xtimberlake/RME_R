@@ -32,30 +32,17 @@ typedef enum
 	STAND_BY,
 }fetch_step_e;
 
+
 typedef enum
 {
-	VOID_HANDLE,
-	LEFT_POS,
-	ROT_OUT,
-	ROT_OFF,
-	TAKE_OFF_AND_OUT,
-	
-	ROT_OFF_MID,
-	
-	TAKE_OFF_AND_OUT_MID,
-	
-	ROT_OFF_FINAL,
-	TAKE_OFF_FINAL,
-	
-	BULLET_HOLD_ON,
-	BULLET_RESET_STEP,
-	BULLET_SAFETY_MODE,
-	
-}bullet_step_e;
+	CONTINUE,
+	SUCCE,
+}bullet_status_e;
+
 
 __KEYBOARD_HANDLE_EXT fetch_step_e fetch_step;
+__KEYBOARD_HANDLE_EXT bullet_status_e bullet_status;
 
-__KEYBOARD_HANDLE_EXT bullet_step_e bullet_setp;
 
 
 
@@ -69,5 +56,6 @@ void keyboard_uplift_ctrl(void);
 void reset_bullet(void);
 void single_fetch_bullet(void);
 void single_second_fetch_bullet(void);
+void one_shot(void);
 
 #endif

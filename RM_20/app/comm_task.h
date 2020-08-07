@@ -25,7 +25,6 @@ typedef struct
   /* 4 chassis motor current */
   int16_t chassis_cur[4];
   int16_t uplift_cur[2];
-  int16_t gimbal_cur[2];
 	int16_t slip_cur;
 	int16_t rotate_cur[2];
 } motor_current_t;
@@ -36,7 +35,7 @@ void can_msg_send_task(void const *argu);
 void send_chassis_motor_ctrl_message(int16_t chassis_cur[]);
 void send_uplift_motor_ctrl_message(int16_t uplift_cur[]);
 void send_gimbal_motor_ctrl_message(int16_t gimbal_cur[]);
-void send_rotate_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur);
+void send_can2_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur);
 
 extern motor_current_t motor_cur;
 #endif

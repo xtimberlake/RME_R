@@ -26,7 +26,7 @@ void can_msg_send_task(void const *argu)
 	for(;;)
   {
 		event = osSignalWait(UPLIFT_MOTOR_MSG_SEND | \
-													GIMBAL_MOTOR_MSG_SEND|	\
+													SLIP_MOTOR_MSG_SEND|	\
 													CHASSIS_MOTOR_MSG_SEND|  \
 													ROTATE_MOTOR_MSG_SEND	, osWaitForever);
 		
@@ -40,13 +40,13 @@ void can_msg_send_task(void const *argu)
       {
         send_uplift_motor_ctrl_message(motor_cur.uplift_cur);
       }
-			if (event.value.signals & GIMBAL_MOTOR_MSG_SEND)
+			if (event.value.signals & SLIP_MOTOR_MSG_SEND)
       {
-        send_gimbal_motor_ctrl_message(motor_cur.gimbal_cur);
+        send_can2_motor_ctrl_message(motor_cur.rotate_cur,motor_cur.slip_cur);
 			}
 			if (event.value.signals & ROTATE_MOTOR_MSG_SEND)
 			{
-				send_rotate_motor_ctrl_message(motor_cur.rotate_cur,motor_cur.slip_cur);
+				send_can2_motor_ctrl_message(motor_cur.rotate_cur,motor_cur.slip_cur);
 			}
 		}
 		
@@ -73,15 +73,10 @@ void send_uplift_motor_ctrl_message(int16_t uplift_cur[])
 	  send_uplift_cur(uplift_cur[0], uplift_cur[1]);
 }
 
-void send_gimbal_motor_ctrl_message(int16_t gimbal_cur[])
-{
-	  send_gimbal_cur(gimbal_cur[0], gimbal_cur[1]);
 
-}
-
-void send_rotate_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur)
+void send_can2_motor_ctrl_message(int16_t rotate_cur[], int16_t slip_cur)
 {
-		send_rotate_cur(rotate_cur[0], rotate_cur[1],slip_cur);
+		send_can2_cur(rotate_cur[0], rotate_cur[1],slip_cur);
 	
 }
 

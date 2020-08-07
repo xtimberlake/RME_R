@@ -5,19 +5,22 @@
 
 #define BIT_HELP    	0
 #define BIT_PRESS   	1
-#define BIT_THROW   	2
-#define BIT_BRACKET 	3
+#define BIT_BRACKET   2
+#define BIT_THROW 		3
 #define BIT_BULLET1 	4
 #define BIT_BULLET2 	5
+#define BIT_RESERVE 	0
 
 #define BIT_CAMERA		0
-#define BIT_ROTATE  	1
+#define BIT_MAGAZINE 	1
+#define BIT_SAFE			2
 
 typedef struct
 {
 	uint8_t	gas_status;
 	uint8_t  electrical_status;
 } main_data_t;
+
 
 
 //typedef struct

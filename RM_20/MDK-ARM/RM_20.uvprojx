@@ -672,11 +672,6 @@
               <FileType>1</FileType>
               <FilePath>..\bsp\bsp_T_imu.c</FilePath>
             </File>
-            <File>
-              <FileName>bsp_JY901.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>D:\project\STM32\Template\rm_code\my_test_code\RM_20\bsp\bsp_JY901.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -691,11 +686,6 @@
               <FileName>debug_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\debug_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>gimbal_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\gimbal_task.c</FilePath>
             </File>
             <File>
               <FileName>modeswitch_task.c</FileName>
@@ -752,11 +742,6 @@
         <Group>
           <GroupName>Application/MathLib</GroupName>
           <Files>
-            <File>
-              <FileName>data_fifo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\mathlib\data_fifo.c</FilePath>
-            </File>
             <File>
               <FileName>data_processing.c</FileName>
               <FileType>1</FileType>

@@ -35,11 +35,10 @@
 #include "status_task.h"
 #include "uplift_task.h"
 #include "slip_task.h"
-#include "gimbal_task.h"
+
 
 #include "bsp_pump.h"
 #include "modeswitch_task.h"
-#include "gimbal_task.h"
 #include "judge.h"
 
 #include "rotate_task.h"

@@ -43,7 +43,6 @@ typedef struct
 	float						ecd_ref;	//设定值
 	float						ecd_fdb;	//反馈值
 	float						ecd_offset;//补偿
-	float						ecd_ref_slope;//斜坡
 	
 	float           cnt_ref;
 	float           cnt_fdb;
@@ -58,18 +57,9 @@ typedef struct
 
 }rotate_t;
 
-typedef struct
-{
-	float beta;
-	float input;
-	float output;
-
-}rotate_first_order_fil_t;
 
 __ROTATE_TASK_EXT rotate_t rotate;
 
-float rotate_filter_cali(rotate_first_order_fil_t *p, float final_value);
-void filter_init(rotate_first_order_fil_t *p, float bt);
 void rotate_task(void const *argu);
 void keyborad_bullet_handle(void);
 

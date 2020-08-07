@@ -18,7 +18,7 @@ typedef struct
 {
 	int16_t yaw_ref;
 	int16_t pit_ref;
-
+	
 }view_t;	
 
 extern view_t view;

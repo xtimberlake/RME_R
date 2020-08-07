@@ -31,7 +31,6 @@ typedef enum
 	
   CHASSIS_KB_NEAR   ,//贴墙自动模式
 	CHASSIS_KB_LIMIT_TOUCH	,
-	
 
   CHASSIS_KB  ,
 } chassis_mode_e;

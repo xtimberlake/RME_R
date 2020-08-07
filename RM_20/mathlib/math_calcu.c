@@ -15,6 +15,17 @@ extern float chassis_speed;
   * @param[in]      ÂË²¨²ÎÊý
   * @retval         ·µ»Ø¿Õ
   */
+void ramp_calc_remain(ramp_function_source_t *ramp_source_type, float frame_period, float input)
+{
+
+	  ramp_source_type->frame_period = frame_period;
+
+    ramp_source_type->input = input;
+
+    ramp_source_type->out += ramp_source_type->input * ramp_source_type->frame_period;
+
+}
+
 void ramp_calc(ramp_function_source_t *ramp_source_type, float frame_period, float input, float max, float min)
 {
 	ramp_source_type->max_value = max;
@@ -34,6 +45,7 @@ void ramp_calc(ramp_function_source_t *ramp_source_type, float frame_period, flo
         ramp_source_type->out = ramp_source_type->min_value;
     }
 }
+
 
 void chassis_ramp()
 {

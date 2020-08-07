@@ -1,5 +1,5 @@
 #include "bsp_can.h"
-
+#include "stm32f1xx_hal_def.h"
 
 CAN_TxHeaderTypeDef Tx1Message;//发送数据句柄
 CAN_RxHeaderTypeDef Rx1Message;//接收数据句柄
@@ -8,6 +8,8 @@ uint8_t CAN_Rx_data[8];
 
 float M1_realecd=0;
 moto_measure_t moto_rotate[2];
+
+HAL_StatusTypeDef HAL_RetVal;
 
 /**
   * @brief   can filter initialization     设置CAN滤波器组
@@ -29,6 +31,7 @@ void my_can_filter_init_recv_all(void)
   can_filter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	can_filter.SlaveStartFilterBank = 0;  
   can_filter.FilterActivation     = ENABLE;
+	can_filter.SlaveStartFilterBank = 14;
 
   HAL_CAN_ConfigFilter(&hcan, &can_filter);//根据指定的参数配置CAN接收筛选器
   while (HAL_CAN_ConfigFilter(&hcan, &can_filter) != HAL_OK);
@@ -54,9 +57,9 @@ void can_device_init(void)
 						将计算好的电流发送到电机
   * @param  3508 motor current
   */
+uint8_t tempCanTxdata2[50];
 void send_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
-{
-	uint8_t FreeTxNum = 0;  
+{ 
 	
 	Tx1Message.StdId = 0x200;//基本id
 	Tx1Message.IDE 	 = CAN_ID_STD;//id模式
@@ -72,13 +75,26 @@ void send_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
 	CAN_Tx_data[6] = iq4 >> 8;
 	CAN_Tx_data[7] = iq4;
 	
-	//查询发送邮箱是否为空
-	FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);  
-	while(FreeTxNum == 0) 
-	{  
-    FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);  
-  }
-	HAL_CAN_AddTxMessage(&hcan, &Tx1Message,CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX1);
+//	//查询发送邮箱是否为空
+//	FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);  
+//	while(FreeTxNum == 0) 
+//	{  
+//    FreeTxNum = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);  
+//  }
+//	HAL_CAN_AddTxMessage(&hcan, &Tx1Message,CAN_Tx_data,(uint32_t*)CAN_TX_MAILBOX1);
+		uint32_t count_overtime=0;
+		while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan)==0)	//HAL_CAN_GetTxMailboxesFreeLevel(hcan);
+		{
+			count_overtime++;
+			if(count_overtime>5000)
+				break;
+		}
+		HAL_RetVal=HAL_CAN_AddTxMessage(&hcan,&Tx1Message,CAN_Tx_data,(uint32_t*)tempCanTxdata2); 
+
+		if(HAL_RetVal!=HAL_OK)
+		{
+			return ;
+		}
 }
 
 
@@ -89,6 +105,7 @@ void send_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
   */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
+	__HAL_CAN_DISABLE_IT(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&Rx1Message, CAN_Rx_data);//从hcan的FIFO0区域获取一个Rx1Message(CAN帧)并将其放入数组CAN_Rx_data中
 	switch (Rx1Message.StdId)
 	{

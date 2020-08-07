@@ -2,9 +2,12 @@
 #define __BSP_CAN_H
 
 #include "can.h"
+#include <stdio.h>
 
 /* can receive motor parameter structure */
 #define FILTER_BUF 5
+
+
 
 typedef struct
 {

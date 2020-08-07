@@ -70,6 +70,6 @@ void send_uplift_cur(int16_t up1_iq, int16_t up2_iq);
 void send_slip_cur(int16_t sl_iq);
 void send_chassis_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4);
 void send_gimbal_cur(int16_t yaw_iq,int16_t pit_iq);
-void send_rotate_cur(int16_t rt1_iq, int16_t rt2_iq, int16_t sl_iq);
+void send_can2_cur(int16_t rt1_iq, int16_t rt2_iq, int16_t sl_iq);
 
 #endif

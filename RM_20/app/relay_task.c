@@ -48,7 +48,7 @@ void relay_task(void const *argu)
 		bullet2_executed();
 
 		camera_executed();
-		rotate_executed();
+		magazine_executed();
 		
 		relay_safe_executed();
 		
@@ -63,7 +63,7 @@ void relay_task(void const *argu)
 		
 		taskENTER_CRITICAL();
 		HAL_UART_Transmit(&huart6, (uint8_t *)&relay.status, 8, 0xff);
-		osDelay(10); //延时一段时间，让气阀板检测空闲
+		osDelay(10);//让出内核
 		taskEXIT_CRITICAL();
 
 	}

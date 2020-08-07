@@ -26,25 +26,11 @@ extern TaskHandle_t can_msg_send_task_t;
 
 void uplift_init()
 {
-	//对位校准的PID
-		PID_struct_init(&pid_calibre_spd[0], POSITION_PID, 15000, 4000,
-									10.0f,	0.03f,	0.0f	);  
-		PID_struct_init(&pid_calibre_spd[1], POSITION_PID, 15000, 4000,
-									10.0f,	0.03f,	0.0f	); 
-//		PID_struct_init(&pid_calibre_height[0], POSITION_PID, 3000, 500,
-//									2500.0f,	5.0f,	0.0f	);  
-//		PID_struct_init(&pid_calibre_height[1], POSITION_PID, 3000, 500,
-//									2500.0f,	5.0f,	0.0f	);  
-
-		//抬升的PID  机械有问题,据浩耘说无法通过pid解决
+		//抬升的PID  机械有问题,老板说这个有点难,但是他通个宵就能调好
 		PID_struct_init(&pid_uplift_spd[0], POSITION_PID, 15000, 3000,
 									10.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_spd[1], POSITION_PID, 15000, 3000,
 									10.0f,	0.0f,	0.0f	);  
-//		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 2800, 500,
-//									800.0f,	0.0f,	0.0f	);  
-//		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 2800, 500,
-//									800.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 2800, 500,
 									800.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 2800, 500,
@@ -75,18 +61,19 @@ void uplift_task(void const *argu)
 	uplift.height_fdb[0] =  moto_uplift[0].total_ecd/uplift_ratio  -  uplift.height_offset[0];
 	uplift.height_fdb[1] =  moto_uplift[1].total_ecd/uplift_ratio  -  uplift.height_offset[1];
 	
-//	if(uplift.state != UPLIFT_KNOWN && uplift.ctrl_mode == UPLIFT_AUTO) //自动模式且未知状态下进行校准  有错 know/unknow
-	if(uplift.state != UPLIFT_KNOWN ) //自动模式且未知状态下进行校准  有错 know/unknow	
+	if(uplift.state != UPLIFT_KNOWN && uplift.ctrl_mode == UPLIFT_AUTO) //自动模式且未知状态下进行校准 
 	{
 		switch(uplift.state)
 		{
 			case UPLIFT_UNKNOWN:
 			{
-				uplift.state = UPLIFT_CALIBRA;				
+				uplift.state = UPLIFT_CALIBRA;
 			}break;
 			case UPLIFT_CALIBRA:
 			{
-
+				uplift.height_offset[0]=moto_uplift[0].total_ecd/uplift_ratio;
+				uplift.height_offset[1]=moto_uplift[1].total_ecd/uplift_ratio;
+				uplift.state = UPLIFT_KNOWN;
 			}break;
 			case UPLIFT_KNOWN:
 			{

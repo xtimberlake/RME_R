@@ -11,9 +11,6 @@
 
 #define SLIP_PERIOD 10
 
-#define SLIP_L 	50
-#define SLIP_Mi 0
-#define SLIP_R 	50
 
 typedef enum
 {
@@ -67,6 +64,5 @@ __SLIP_TASK_EXT slip_t slip;
 void slip_task(void const *argu);
 void slip_get_position_flag(void);
 void slip_init(void);
-float pid_calc_integral_exp(pid_t* pid, float get, float set);
 
 #endif

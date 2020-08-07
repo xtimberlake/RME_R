@@ -142,10 +142,12 @@ void StartDefaultTask(void const * argument)
     
 
   /* USER CODE BEGIN StartDefaultTask */
+//		osTimerStart(rotate_timer_id,ROTATE_PERIOD);
   /* Infinite loop */
   for(;;)
   {
-		osDelay(10);
+		HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_15);
+		osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
 }

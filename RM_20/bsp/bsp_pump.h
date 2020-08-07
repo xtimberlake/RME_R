@@ -37,8 +37,8 @@
 
 #define camera_on()			relay.electrical_status |=  (0x01 <<0)
 #define camera_off()		relay.electrical_status &= ~(0x01 <<0)
-#define rotate_on() 		relay.electrical_status |=  (0x01 <<1)
-#define rotate_off() 		relay.electrical_status &= ~(0x01 <<1)
+#define magazine_on() 	relay.electrical_status |=  (0x01 <<1)
+#define magazine_off() 	relay.electrical_status &= ~(0x01 <<1)
 
 #define relay_safe_on() 		relay.electrical_status |=  (0x01 <<2)
 #define relay_safe_off() 		relay.electrical_status &= ~(0x01 <<2)
@@ -67,6 +67,7 @@ typedef struct
 typedef struct
 {
   relay_mode_e 	camera_ctrl_mode;	//切换倒车摄像头视角
+	relay_mode_e  magazine_ctrl_mode;	//切换弹仓模式
   relay_mode_e  rotate_ctrl_mode;	//切换气阀板控制旋转电机模式
 	relay_mode_e	safe_mode;				//旋转电机安全模式	
 } electrical_t;
@@ -81,7 +82,7 @@ __BSP_PUMP_EXT void bullet1_executed(void);
 __BSP_PUMP_EXT void bullet2_executed(void);
 
 __BSP_PUMP_EXT void camera_executed(void);
-__BSP_PUMP_EXT void rotate_executed(void);
+__BSP_PUMP_EXT void magazine_executed(void);
 
 __BSP_PUMP_EXT void relay_safe_executed(void);
 

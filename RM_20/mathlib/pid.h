@@ -94,38 +94,20 @@ __PID_EXT pid_t pid_chassis_spd[4];
 __PID_EXT pid_t pid_chassis_angle;//外环为陀螺仪角度
 __PID_EXT pid_t pid_chassis_near_x;//贴墙距离
 __PID_EXT pid_t pid_chassis_near_w;//贴墙角度
+__PID_EXT pid_t pid_chassis_auto_x;
+		
 //抬升
 __PID_EXT pid_t pid_uplift_spd[2];
 __PID_EXT pid_t pid_uplift_height[2];
-//校准
-__PID_EXT pid_t pid_calibre_spd[2];		
-__PID_EXT pid_t pid_calibre_height[2];
-////收腿
-//__PID_EXT pid_t pid_retract_spd[2];		
-//__PID_EXT pid_t pid_retract_height[2];
-		
-__PID_EXT pid_t	pid_pit_ecd;
-__PID_EXT pid_t	pid_yaw_ecd;
-//电机速度做内环
-__PID_EXT pid_t	pid_pit_spd;
-__PID_EXT pid_t pid_yaw_spd;
-
-//陀螺仪角速度做外环
-__PID_EXT pid_t	pid_pit_gyro;
-__PID_EXT pid_t pid_yaw_gyro;
 
 //取弹横移电机
 __PID_EXT pid_t	pid_slip_spd;
 __PID_EXT pid_t pid_slip_pos;
 
-__PID_EXT pid_t pid_slip_single;
-
 //取弹旋转电机
 __PID_EXT pid_t	pid_rotate_spd;
 __PID_EXT pid_t pid_rotate_pos;
 
-__PID_EXT pid_t	pid_rotate_filter_spd;
-__PID_EXT pid_t pid_rotate_filter_pos;
 
 #endif
 

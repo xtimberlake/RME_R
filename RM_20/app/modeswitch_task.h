@@ -28,6 +28,7 @@ typedef enum
 	RC_MOVE_MODE,//遥控器底盘移动模式（抬升机构可微调）
 	RC_BULLET_MODE,//遥控器各组件测试模式
 	KB_MODE,//键盘模式
+	DEBUG_MODE,
 } engineer_mode_e;
 
 //功能模式
@@ -47,24 +48,6 @@ typedef enum
 	CAMERA_HELP_MODE,
 }camera_mode_e;
 
-//typedef enum
-//{
-//	BULLET_N,
-//	BULLET_AIM,	//对位高度，若取后排则伸出悬架   对位在刚好取弹高度
-//	BULLET_STICK,
-//	BULLET_ROTATE_OUT,//转动爪子出去
-//	BULLET_PRESS,//夹取弹药箱	
-//	BULLET_GET,	//抬升弹药箱取出
-//	BULLET_WITHDRAW,//（取第二排模式）收回悬架
-//	BULLET_PUSH,		//倒子弹
-//	BULLET_THROW,		//丢弹药箱
-//	BULLET_LOOSE,		//松开
-//	BULLET_DONE_STAY,		//取弹完成停着
-//	BULLET_DONE_LEFT,
-//	BULLET_DONE_RIGHT,
-//	BULLET_RESET,		//校准
-
-//} get_bullet_mode_e;//用状态描述整个取弹流程
 
 typedef enum
 {
@@ -90,32 +73,23 @@ typedef enum
 
 typedef enum
 {
-	CLIMB_UP_HANG,	//升到比柱子高
-	CLIMB_UP_AIM,
-	CLIMB_UP_ZHUZI,	//降到柱子高度
-	CLIMB_UP_CLAW,
-	CLIMB_UP_RETRACT,
-	CLIMB_UP_TURBINE,
-	CLIMB_UP_ON,			//到岛上
-	CLIMB_UP_LOOSE,
-	CLIMB_UP_DONE,
+	VOID_HANDLE,
+	LEFT_POS,
+	ROT_OUT,
+	ROT_OFF,
+	TAKE_OFF_AND_OUT,
 	
-} climb_up_mode_e;//用状态描述整个上岛流程
-
-typedef enum
-{
-	CLIMB_DOWN_HANG,
-	CLIMB_DOWN_AIM,
-	CLIMB_DOWN_ZHUZI,	//降到柱子高度
-	CLIMB_DOWN_CLAW,
-	CLIMB_DOWN_RETRACT,
-	CLIMB_DOWN_TURBINE,
-	CLIMB_DOWN_ON,		//到岛下
-	CLIMB_DOWN_LOOSE,
-	CLIMB_DOWN_DONE,
+	ROT_OFF_MID,
 	
-} climb_down_mode_e;//用状态描述整个下岛流程
-
+	TAKE_OFF_AND_OUT_MID,
+	ROT_OFF_FINAL,
+	TAKE_OFF_FINAL,
+	
+	BULLET_HOLD_ON,
+	BULLET_RESET_STEP,
+	BULLET_SAFETY_MODE,
+	
+}bullet_step_e;//用状态描述整个取弹流程
 
 typedef struct
 {
@@ -129,21 +103,9 @@ typedef struct
 	int handle_ro_times;
 } get_bullet_t;
 
-typedef struct
-{
-	get_bullet_mode_e ctrl_mode;
-	uint8_t step_flag;		//单步执行的flag
-	uint8_t reset_flag;
-	uint8_t jdq;
-	uint16_t pwm;
-	uint8_t flag;
-	climb_up_mode_e climb_up_mode;
-	climb_down_mode_e climb_down_mode;
-	uint8_t up_or_down;
-} climb_t;
+__MODESW_TASK_EXT bullet_step_e bullet_setp;
 
 __MODESW_TASK_EXT get_bullet_t bullet;
-__MODESW_TASK_EXT climb_t climb;
 
 __MODESW_TASK_EXT engineer_mode_e glb_ctrl_mode;
 __MODESW_TASK_EXT engineer_mode_e last_glb_ctrl_mode;

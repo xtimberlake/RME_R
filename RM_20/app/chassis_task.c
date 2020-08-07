@@ -26,7 +26,7 @@
 
 chassis_t chassis;
 
-#define chassis_ratio (820.0f)
+#define chassis_ratio (409.6f)
 
 extern TaskHandle_t can_msg_send_task_t;
 
@@ -49,20 +49,22 @@ void chassis_task(void const *argu)
 			chassis.vx = 0;
 			chassis.vy = 0;
 			chassis.vw = 0;
-
 		}break;
+		
 		case CHASSIS_REMOTE_NORMAL:
 		{
 			chassis.vx = (float)rc.ch2*10;
 			chassis.vy = (float)rc.ch1*10;
 			chassis.vw = (float)rc.ch3*(-10);
 		}break;
+		
 		case CHASSIS_REMOTE_SLOW:
 		{
 			chassis.vx = (float)rc.ch2*3;
 			chassis.vy = (float)rc.ch1*3;
 			chassis.vw = (float)rc.ch3*(-3);
 		}break;
+		
 		case CHASSIS_KB:
 		{		
 			chassis_ramp();
@@ -74,23 +76,26 @@ void chassis_task(void const *argu)
 			}
 			else
 			chassis.vw = 0.3*(double)chassis_w_ramp.out;
-		}
-		break;
+		}break;
+		
 		case CHASSIS_RC_NEAR: //激光测距方案贴资源岛行走
 		{
-			chassis.vx = -pid_calc(&pid_chassis_near_x,(float)relay.dis1+(float)relay.dis2,chassis.dis_ref);//调距离
+			
+			chassis.vx = pid_calc(&pid_chassis_auto_x,(float)chassis.cnt_fdb,(float)chassis.cnt_ref); //自动底盘
+			//先找方向
 			chassis.vy = (float)rc.ch1*3;
-			chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
-		}
-		break;		
+			chassis.vw = 0;
+			//chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
+		}break;		
+		
 		case CHASSIS_KB_NEAR: //激光测距方案贴资源岛行走
 		{
 			chassis_ramp();
 			chassis.vx = -pid_calc(&pid_chassis_near_x,(float)relay.dis1+(float)relay.dis2,chassis.dis_ref);//调距离
 			chassis.vy = (float)(chassis_y_ramp.out);
 			chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
-		}
-		break;	
+		}break;	
+		
 //		case CHASSIS_KB_LIMIT_TOUCH: //限位开关方案贴资源岛行走
 //		{
 //			//limit equals 1 when unpressed
@@ -105,7 +110,8 @@ void chassis_task(void const *argu)
 //				chassis.vw = chassis.target_vw;
 //		}
 //		break;
-		default:{}break;
+		default:
+		break;
 	}		
 	
 	mecanum_calc(chassis.vx,chassis.vy, chassis.vw, chassis.wheel_spd_ref); //麦轮结算
@@ -183,4 +189,8 @@ void chassis_init()
 
 		PID_struct_init(&pid_chassis_near_x, POSITION_PID, 4800, 500,
 									5.0f,	0.0f,15.0f	);  
+	
+	  PID_struct_init(&pid_chassis_auto_x, POSITION_PID, 4800, 500,
+									15.0f,	0.0f,0.0f	);  
+		chassis.cnt_offset =  moto_chassis[0].total_ecd;
 }

@@ -32,7 +32,6 @@
 #include "modeswitch_task.h"
 #include "debug_task.h"
 #include "status_task.h"
-#include "gimbal_task.h"
 #include "uplift_task.h"
 #include "slip_task.h"
 #include "rotate_task.h"
@@ -58,7 +57,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 osThreadId can_msg_send_task_t;
-osThreadId gimbal_task_t;
 osThreadId mode_sw_task_t;
 osThreadId debug_task_t;
 osThreadId status_task_t;
@@ -145,10 +143,10 @@ void MX_FREERTOS_Init(void) {
 	 osTimerDef(sliptTimer, slip_task);
   slip_timer_id = osTimerCreate(osTimer(sliptTimer), osTimerPeriodic, NULL);
 	
-		osTimerDef(rotateTimer, rotate_task);
+	 osTimerDef(rotateTimer, rotate_task);
   rotate_timer_id = osTimerCreate(osTimer(rotateTimer), osTimerPeriodic, NULL);
 	
-		osTimerDef(judge_sendTimer, judge_send_task);
+	 osTimerDef(judge_sendTimer, judge_send_task);
   judge_sendTimer_id = osTimerCreate(osTimer(judge_sendTimer), osTimerPeriodic, NULL);
 	
   /* USER CODE END RTOS_TIMERS */
@@ -169,19 +167,13 @@ void MX_FREERTOS_Init(void) {
 		
 	 osThreadDef(canTask, can_msg_send_task, osPriorityAboveNormal, 0, 512);
   can_msg_send_task_t = osThreadCreate(osThread(canTask), NULL);
-			
-//	 osThreadDef(climbTask, climb_task, osPriorityAboveNormal, 0, 512);
-//  climb_task_t = osThreadCreate(osThread(climbTask), NULL);
-
-	 osThreadDef(relayTask, relay_task, osPriorityNormal, 0, 128);
-  relay_task_t = osThreadCreate(osThread(relayTask), NULL);
-
-	 osThreadDef(gimbal_Task, gimbal_task, osPriorityAboveNormal, 0, 512);
-  gimbal_task_t = osThreadCreate(osThread(gimbal_Task), NULL);
-	 	 /* low priority task */
-	 
+	
 	 osThreadDef(modeTask, mode_switch_task, osPriorityAboveNormal, 0, 512);
 	mode_sw_task_t = osThreadCreate(osThread(modeTask), NULL);
+
+	 	 /* low priority task */
+	 osThreadDef(relayTask, relay_task, osPriorityNormal, 0, 128);
+  relay_task_t = osThreadCreate(osThread(relayTask), NULL);	 
 
 	 osThreadDef(debugTask, debug_task, osPriorityLow, 0, 256);
 	debug_task_t = osThreadCreate(osThread(debugTask), NULL);
@@ -189,7 +181,7 @@ void MX_FREERTOS_Init(void) {
 	 osThreadDef(statusTask, status_task, osPriorityLow, 0, 512);
 	status_task_t = osThreadCreate(osThread(statusTask), NULL);
 
-	 		taskEXIT_CRITICAL();
+	 	taskEXIT_CRITICAL();
 	
   /* USER CODE END RTOS_THREADS */
 

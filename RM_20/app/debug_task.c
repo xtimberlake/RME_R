@@ -16,7 +16,6 @@
 #include "DataScope_DP.h"
 #include "chassis_task.h"
 #include "pid.h"
-#include "gimbal_task.h"
 #include "bsp_motor.h"
 #include "bsp_can.h"
 #include "slip_task.h"
@@ -72,9 +71,9 @@ void debug_task(void const *argu)
 {
 	for(;;)
 	{
-		taskENTER_CRITICAL();
-		DataWave(&huart5);
-	  taskEXIT_CRITICAL();
+//		taskENTER_CRITICAL();
+//		DataWave(&huart5);
+//	  taskEXIT_CRITICAL();
 //		osDelay(5);
 		osDelay(20);
 	}
