@@ -74,14 +74,15 @@ typedef enum
 typedef enum
 {
 	VOID_HANDLE,
+	
 	LEFT_POS,
 	ROT_OUT,
 	ROT_OFF,
-	TAKE_OFF_AND_OUT,
 	
-	ROT_OFF_MID,
-	
+	TAKE_OFF_AND_OUT,		
+	ROT_OFF_MID,	
 	TAKE_OFF_AND_OUT_MID,
+	
 	ROT_OFF_FINAL,
 	TAKE_OFF_FINAL,
 	
@@ -120,13 +121,10 @@ void mode_switch_task(void const *argu);
 void get_main_ctrl_mode(void);
 void keyborad_bullet_handle_controller(void);
 void get_global_last_mode(void);
-void get_bullet_task(void);//
 void rc_move_handle(void);
 void rc_bullet_handle(void);
-void rc_climb_handle(void);
 void kb_handle(void);
 void safety_mode_handle(void);
-void climb_ctrl_mode(void);
 void get_bullet_ctrl_mode(void);
 
 #endif

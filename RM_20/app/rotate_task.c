@@ -17,10 +17,10 @@ extern TaskHandle_t can_msg_send_task_t;
 void rotate_init()
 {
 		//旋转电机的PID 速度pi/位置p(d)
-		PID_struct_init(&pid_rotate_spd, POSITION_PID, 10000, 1000,
-									32.0f,	0.46f,	0.0f	);  
+		PID_struct_init(&pid_rotate_spd, POSITION_PID, 10000, 800,
+									20.0f,	0.35f,	0.0f	);  
 		PID_struct_init(&pid_rotate_pos, POSITION_PID, 180, 500,
-									0.5f,	0.0f,	0.0f	);  
+									0.8f,	0.0f,	0.0f	);  
 }
 
 

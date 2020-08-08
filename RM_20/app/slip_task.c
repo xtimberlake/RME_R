@@ -21,10 +21,10 @@ void slip_init()
 {
 		//ºáÒÆµÄPID 
 		PID_struct_init(&pid_slip_spd, POSITION_PID, 7000, 3000,
-									15.0f,	1.0f,	0.0f	);  
+									15.0f,	0.1f,	0.0f	);  
 		
 		PID_struct_init(&pid_slip_pos, POSITION_PID, 6500, 3000,
-									15.0f,	0.0f,	0.0f	);  
+									28.0f,	0.0f,	0.0f	);  
 	
  	
 	  slip.ctrl_mode = SLIP_STOP;

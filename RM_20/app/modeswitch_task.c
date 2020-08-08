@@ -59,7 +59,7 @@ float servo_yaw_pwm=2080;
 uint8_t rc_kb_X_flag=0;
 uint8_t rc_kb_R_flag=0;
 uint8_t rc_ch4_flag=0;
-uint8_t ready_flag=0;
+uint8_t bullet_flag1=0;
 
 
 #define MOUSE_SPEED_SLOW		50
@@ -140,7 +140,7 @@ void get_main_ctrl_mode(void)
 					slip.ctrl_mode = SLIP_AUTO;
 					
 					rotate.state = ROTATE_KNOWN;
-					rotate.ctrl_mode = ROTATE_AUTO;
+					rotate.ctrl_mode = ROTATE_STOP;
 					
 					
 					if(!init_sign || last_glb_ctrl_mode == SAFETY_MODE)
@@ -245,13 +245,13 @@ void rc_bullet_handle(void)
 	if(rc5_flag==1&&rc.ch5>-250&&rc.ch5<250)
 	{
 		  safety_mode_handle();
-			ready_flag = 0;
+			bullet_flag1 = 0;
 			bullet_setp = BULLET_SAFETY_MODE;
 			rc5_flag = 0;				
 	}
 	else if(rc5_flag==2&&rc.ch5>-250&&rc.ch5<250)
 	{
-			ready_flag = 1;	//取弹标志位进一
+			bullet_flag1 = 1;	//取弹标志位进一
 			rc5_flag = 0;		
 	}
 }
@@ -354,13 +354,13 @@ void keyborad_bullet_handle_controller(void)
 	{
 	case VOID_HANDLE:
 	{
-		if(ready_flag)
+		if(bullet_flag1)
 		{
 			slip.ctrl_mode = SLIP_AUTO;
 			rotate.ctrl_mode = ROTATE_AUTO;
 			if(slip.state==SLIP_KNOWN && rotate.state==ROTATE_KNOWN)
 			{
-				ready_flag = 0;
+				bullet_flag1 = 0;
 				bullet_setp = LEFT_POS;
 			}
 		}
@@ -368,13 +368,13 @@ void keyborad_bullet_handle_controller(void)
 	
 	case LEFT_POS:
 	{
-		if(ready_flag==1)
+		if(bullet_flag1==1)
 		{
 			slip.dist_ref = 5.2f;
 			rotate.cnt_ref = 600;
 			if(fabs((float)(slip.dist_fdb-5.2f))<10)
 			{
-				ready_flag=0;
+//				bullet_flag1=0;
 			  bullet_setp = ROT_OUT;
 				pump.press_ctrl_mode = ON_MODE;
 				
@@ -395,7 +395,7 @@ void keyborad_bullet_handle_controller(void)
 	
 	case ROT_OUT:
 	{
-		if(ready_flag==1)
+		if(bullet_flag1==1)
 		{
 			
 			
@@ -403,7 +403,7 @@ void keyborad_bullet_handle_controller(void)
 			
 			if(fabs((double)(rotate.cnt_fdb-1000))<40)
 			{
-				ready_flag=0;
+//				bullet_flag1=0;
 				bullet_setp = ROT_OFF;
 				handle_fetch_time=0;
 				
@@ -417,7 +417,7 @@ void keyborad_bullet_handle_controller(void)
 	}break;
 	case ROT_OFF:
 	{
-		if(ready_flag==1)
+		if(bullet_flag1==1)
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode =OFF_MODE;
@@ -427,7 +427,7 @@ void keyborad_bullet_handle_controller(void)
 				rotate.cnt_ref = 170;
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{
-					ready_flag=0;
+//					bullet_flag1=0;
 					bullet_setp = TAKE_OFF_AND_OUT;
 					handle_fetch_time=0;
 
@@ -449,7 +449,7 @@ void keyborad_bullet_handle_controller(void)
 	{
 		
 		slip.dist_ref = 493.6f;
-			if(ready_flag==1 && fabs((float)(slip.dist_fdb-493.6f))<15)
+		if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-493.6f))<15)
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode = ON_MODE;
@@ -463,7 +463,7 @@ void keyborad_bullet_handle_controller(void)
 				{			
 					handle_fetch_time2=0;
 					handle_fetch_time=0;
-					ready_flag=0;
+//					bullet_flag1=0;
 					bullet_setp = ROT_OFF_MID;
 					
 //					/*自动进入下一步*/
@@ -477,7 +477,7 @@ void keyborad_bullet_handle_controller(void)
 	
 	case ROT_OFF_MID:
 	{
-		if(ready_flag==1)
+		if(bullet_flag1==1)
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode =OFF_MODE;
@@ -490,7 +490,7 @@ void keyborad_bullet_handle_controller(void)
 				rotate.cnt_ref = 170;
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{			
-					ready_flag=0;
+//					bullet_flag1=0;
 					bullet_setp = TAKE_OFF_AND_OUT_MID;
 					handle_fetch_time=0;
 					handle_fetch_time2=0;
@@ -511,7 +511,7 @@ void keyborad_bullet_handle_controller(void)
 	case TAKE_OFF_AND_OUT_MID:
 	{
 		slip.dist_ref = 992.4f;
-		if(ready_flag==1 && fabs((float)(slip.dist_fdb-992.6f))<15)
+		if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-992.6f))<15)
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode = ON_MODE;
@@ -525,7 +525,7 @@ void keyborad_bullet_handle_controller(void)
 				{					
 					handle_fetch_time2=0;
 					handle_fetch_time=0;
-					ready_flag=0;
+//					bullet_flag1=0;
 					bullet_setp = ROT_OFF_FINAL;	
 					
 //					/*自动进入下一步*/
@@ -541,7 +541,7 @@ void keyborad_bullet_handle_controller(void)
 	case ROT_OFF_FINAL:
 	{
 	
-			if(ready_flag==1)
+			if(bullet_flag1==1)
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode =OFF_MODE;
@@ -554,7 +554,7 @@ void keyborad_bullet_handle_controller(void)
 			rotate.cnt_ref = 170;
 			if(fabs((double)(rotate.cnt_fdb-170))<15)
 			{
-				ready_flag=0;
+//				bullet_flag1=0;
 				bullet_setp = TAKE_OFF_FINAL;
 				handle_fetch_time=0;
 				handle_fetch_time2=0;
@@ -577,8 +577,8 @@ void keyborad_bullet_handle_controller(void)
 	case TAKE_OFF_FINAL:
 	{
 	
-			slip.dist_ref = 493.5f;
-					if(ready_flag==1 )
+		slip.dist_ref = 493.5f;
+		if(bullet_flag1==1 )
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode = ON_MODE;
@@ -597,7 +597,7 @@ void keyborad_bullet_handle_controller(void)
 						{
 							pump.throw_ctrl_mode = OFF_MODE;
 							rotate.cnt_ref = 200;
-							ready_flag=0;
+//							bullet_flag1=0;
 							handle_fetch_time=0;
 							handle_fetch_time2=0;
 							bullet_setp = BULLET_HOLD_ON;
@@ -613,10 +613,10 @@ void keyborad_bullet_handle_controller(void)
 	
 	case BULLET_HOLD_ON:
 	{		
-		if(ready_flag)
+		if(bullet_flag1)
 		{
 			bullet_setp = BULLET_RESET_STEP;
-			ready_flag=0;
+			bullet_flag1=0;
 		}	
 	}break;
 	
@@ -637,11 +637,11 @@ void keyborad_bullet_handle_controller(void)
 		slip.state = SLIP_UNKNOWN;
 		slip.dist_offset=0;
 		
-		if(ready_flag)
+		if(bullet_flag1)
 		{	
 			bullet_setp = VOID_HANDLE;
 			
-			ready_flag=0;
+			bullet_flag1=0;
 			handle_fetch_time2=0;
 			handle_fetch_time=0;			
 		}

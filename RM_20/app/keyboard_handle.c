@@ -14,7 +14,6 @@
 #include "remote_msg.h"
 #include "math_calcu.h"
 
-#define E_rotate 1 //数字1表示使用3508旋转电机,否则使用旋转气缸
 
 uint8_t safety_0=0;
 uint8_t ready_play=0;
@@ -24,7 +23,6 @@ uint32_t handle_time2=0;
 uint32_t handle_times=0;
 uint8_t on=0;
 static uint8_t step = 0;
-
 
 ramp_function_source_t chassis_auto_ramp;
 
@@ -167,8 +165,7 @@ void keyboard_uplift_slip_ctrl()
 	if(glb_ctrl_mode == RC_BULLET_MODE && rc.mouse.r)
 	{
 		if(slip.position_flag == CENTER_BULLET_POS) //要在中心位置才可以抬升到取弹高度
-		{
-			
+		{	
 			uplift.height_ref[0] = uplift.height_get_bullet_REF ; //抬升到取弹高度
 		}
 		else
@@ -360,23 +357,12 @@ void single_second_fetch_bullet(void)
 			}break;	
 		case ROTATE_GOING:
 			{
-				#if(E_rotate)
 				rotate.ecd_fdb = rotate.bullet_angle_ref;
 				if(rotate.position_flag == ROTATE_BULLET_POS_FLAG) 
 				{
 					fetch_step = PRESSING;
 					fun_sec_cnt = 0;
-				}
-				#else
-				pump.rotate_ctrl_mode = ON_MODE;
-				if(fun_sec_cnt > 20)
-				{
-					fetch_step = PRESSING;
-					fun_sec_cnt = 0;
-				}
-				#endif
-
-				
+				}				
 			}break;
 		case PRESSING:
 			{
@@ -398,22 +384,12 @@ void single_second_fetch_bullet(void)
 			}break;	
 		case ROTATE_BACK:
 			{
-				#if(E_rotate)
 				rotate.ecd_fdb = rotate.loose_angle_ref;
 				if(rotate.position_flag == ROTATE_LOOSE_POS_FLAG)
 				{
 				  fetch_step = THROWING;
 					fun_sec_cnt = 0;
 				}
-				#else
-				pump.rotate_ctrl_mode = OFF_MODE;
-				if(fun_sec_cnt > 20)
-				{
-					fetch_step = THROWING;
-					fun_sec_cnt = 0;
-				}
-				#endif
-				
 			}break;
 		case THROWING:
 			{
@@ -440,44 +416,37 @@ void single_second_fetch_bullet(void)
 void one_shot()
 {
 	
-	
-	
 	switch(step)
 	{
 		case 0:
 		{
 			if(rc.kb.bit.F || fabs(rotate.cnt_ref-990)<2)
-			{
-				
-				
-					handle_time2++;
-				  if(handle_times>=20) handle_times=20; //避免数值过大
-				  pump.press_ctrl_mode = ON_MODE;
-				  if(handle_time2>10)
-				{
-							
-				if(fabs(rotate.cnt_fdb-990)<40)
-				{
-					
-					pump.press_ctrl_mode = OFF_MODE;
-					handle_times++;
-					if(handle_times>=71) handle_times=71; //避免数值过大
-					if(handle_times>70 && rc.kb.bit.F)
+			{	
+				handle_time2++;
+				if(handle_times>=20) handle_times=20; //避免数值过大
+				pump.press_ctrl_mode = ON_MODE;
+				if(handle_time2>10)
+				{								
+					if(fabs(rotate.cnt_fdb-990)<40)
 					{
-					handle_times = 0;
-						handle_time2 = 0;
-					rotate.cnt_ref = 180;
-					step=1;
+						
+						pump.press_ctrl_mode = OFF_MODE;
+						handle_times++;
+						if(handle_times>=71) handle_times=71; //避免数值过大
+						if(handle_times>70 && rc.kb.bit.F)
+						{
+							handle_times = 0;
+							handle_time2 = 0;
+							rotate.cnt_ref = 180;
+							step=1;
+						}
+						
 					}
-					
+					else
+					{
+						rotate.cnt_ref = 990;					
+					}			
 				}
-				else
-				{
-					rotate.cnt_ref = 990;					
-				}
-				
-				
-			}
 			}
 		}break;
 		
@@ -493,24 +462,21 @@ void one_shot()
 				if(handle_times>=106) handle_times=106; //避免数值过大
 				if(fabs((double)(rotate.cnt_fdb-500))<30)
 				{
-				rotate.cnt_ref = 320;
-				pump.press_ctrl_mode = OFF_MODE;
-				pump.throw_ctrl_mode = OFF_MODE;
-				handle_times = 0;
+					rotate.cnt_ref = 320;
+					pump.press_ctrl_mode = OFF_MODE;
+					pump.throw_ctrl_mode = OFF_MODE;
+					handle_times = 0;
 					handle_time2 = 0;
-				step =0;
+					step =0;
 				}
 				else if(handle_times>55)
 				{
 					pump.throw_ctrl_mode = ON_MODE;
 					rotate.cnt_ref = 500;
 				}
-
 			}
 		
 		}break;
-  }
-	
-	
+  }	
 
 }

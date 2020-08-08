@@ -30,6 +30,10 @@ void DataWave(UART_HandleTypeDef* huart)
 		//Channel：选择通道（1-10）
 		//传入单精度浮点数
 	
+//		DataScope_Get_Channel_Data(rotate.cnt_fdb, 1 );
+//	  DataScope_Get_Channel_Data(rotate.cnt_ref, 2 );
+//		DataScope_Get_Channel_Data(-moto_rotate[0].speed_rpm, 3 ); 
+//	  DataScope_Get_Channel_Data(rotate.spd_ref, 4 ); 
 		DataScope_Get_Channel_Data(slip.dist_fdb, 1 );
 	  DataScope_Get_Channel_Data(slip.dist_ref, 2 );
 		DataScope_Get_Channel_Data(moto_slip.speed_rpm, 3 ); 
@@ -71,9 +75,9 @@ void debug_task(void const *argu)
 {
 	for(;;)
 	{
-//		taskENTER_CRITICAL();
-//		DataWave(&huart5);
-//	  taskEXIT_CRITICAL();
+		taskENTER_CRITICAL();
+		DataWave(&huart5);
+	  taskEXIT_CRITICAL();
 //		osDelay(5);
 		osDelay(20);
 	}
