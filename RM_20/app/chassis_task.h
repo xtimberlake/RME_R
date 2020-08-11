@@ -25,6 +25,7 @@
 typedef enum
 {
   CHASSIS_STOP   ,
+	CHASSIS_STAY	 ,
   CHASSIS_REMOTE_NORMAL ,
 	CHASSIS_REMOTE_SLOW		,
 	CHASSIS_RC_NEAR		,
@@ -55,6 +56,7 @@ typedef struct
 	int LIMIT_RIGHT;
 	
   chassis_mode_e  ctrl_mode;
+	chassis_mode_e	last_ctrl_mode;
   int16_t         current[4];
 	chassis_aim_mode_e aim_ctrl_mode;
   int16_t         wheel_spd_fdb[4];//·´À¡Öµ

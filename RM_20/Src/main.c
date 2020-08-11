@@ -194,7 +194,6 @@ void BSP_init()
 	pump_init();
 	rotate_init();
 
-	bullet.loosetime = 30; //ÈÓ×Óµ¯Ê±¼ä
 	
 	rotate.ctrl_mode= ROTATE_STOP;
 	

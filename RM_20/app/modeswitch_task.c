@@ -59,8 +59,9 @@ float servo_yaw_pwm=2080;
 uint8_t rc_kb_X_flag=0;
 uint8_t rc_kb_R_flag=0;
 uint8_t rc_ch4_flag=0;
-uint8_t bullet_flag1=0;
-
+uint8_t bullet_flag1=0;//取前面三箱
+uint8_t bullet_flag2=0;//取T形四箱
+uint8_t bullet_flag3=0;//取前后六箱
 
 #define MOUSE_SPEED_SLOW		50
 #define MOUSE_SPEED_NORMAL	100
@@ -108,55 +109,28 @@ void get_main_ctrl_mode(void)
 				
 				case RC_MI:
 				{
-					//遥控取弹测试模式					
-					static uint8_t init_sign2=0;
+					//遥控取弹调试模式					
 					glb_ctrl_mode = DEBUG_MODE;
-					chassis.ctrl_mode=CHASSIS_REMOTE_SLOW;
-										
-					if(!init_sign2 || last_glb_ctrl_mode == SAFETY_MODE || bullet_setp == VOID_HANDLE)
-					{
-						init_sign2=1;
-					  chassis.cnt_offset =  moto_chassis[0].total_ecd/409.6f;
-						chassis.cnt_fdb =  moto_chassis[0].total_ecd/409.6f  -  chassis.cnt_offset;
-						chassis.cnt_ref = chassis.cnt_fdb;
-					}//重置底盘
-					chassis.ctrl_mode = CHASSIS_RC_NEAR;
+					chassis.ctrl_mode=CHASSIS_STAY;
 					
 //					glb_ctrl_mode = RC_BULLET_MODE; //设置全局取弹模式
-					rc_bullet_handle();  //取弹遥控调试函数
-					//get_bullet_ctrl_mode(); //取弹回调函数
-					keyborad_bullet_handle_controller();
+//					rc_bullet_handle();  //取弹遥控调试函数
+//					get_bullet_front();
+					get_bullet_single();
 				}break;
 				
 				
 				case RC_DN:
 				{
-					//调试pid
-					
-					static uint8_t init_sign=0;
-					glb_ctrl_mode = DEBUG_MODE;
+					//调试模式/初始化全部
 					
 					slip.state = SLIP_KNOWN;
 					slip.ctrl_mode = SLIP_AUTO;
 					
 					rotate.state = ROTATE_KNOWN;
-					rotate.ctrl_mode = ROTATE_STOP;
-					
-					
-					if(!init_sign || last_glb_ctrl_mode == SAFETY_MODE)
-					{
-						
-						init_sign=1;
-					  chassis.cnt_offset =  moto_chassis[0].total_ecd/409.6f;
-						chassis.cnt_fdb =  moto_chassis[0].total_ecd/409.6f  -  chassis.cnt_offset;
-						chassis.cnt_ref = chassis.cnt_fdb;
-						
-						rotate.ecd_fdb = moto_rotate[0].total_ecd - rotate.ecd_offset;
-						rotate.cnt_fdb = -rotate.ecd_fdb/82.0f;
-						rotate.cnt_ref = rotate.cnt_fdb; 
-						
-					}//重置
-					chassis.ctrl_mode = CHASSIS_RC_NEAR;					
+					rotate.ctrl_mode = ROTATE_AUTO;
+
+					chassis.ctrl_mode = CHASSIS_STAY;					
 				}break;
 			}
 			
@@ -221,6 +195,7 @@ void rc_move_handle(void)
 //	relay.view_tx.yaw = YAW_PWM_MID;	
 }
 
+
 //安全模式
 void safety_mode_handle(void)
 {
@@ -229,6 +204,7 @@ void safety_mode_handle(void)
 	slip.ctrl_mode = SLIP_STOP;
 	rotate.ctrl_mode = ROTATE_STOP;
 }
+
 
 void rc_bullet_handle(void)
 {	
@@ -244,10 +220,11 @@ void rc_bullet_handle(void)
 	}
 	if(rc5_flag==1&&rc.ch5>-250&&rc.ch5<250)
 	{
-		  safety_mode_handle();
-			bullet_flag1 = 0;
-			bullet_setp = BULLET_SAFETY_MODE;
-			rc5_flag = 0;				
+		safety_mode_handle();
+		pump.press_ctrl_mode = OFF_MODE;
+		pump.throw_ctrl_mode = OFF_MODE;
+		bullet_flag1 = 0;
+		rc5_flag = 0;				
 	}
 	else if(rc5_flag==2&&rc.ch5>-250&&rc.ch5<250)
 	{
@@ -324,7 +301,7 @@ void kb_handle(void)
 
 	if(rc.kb.bit.Z)	//各种复位		z
 	{
-		bullet.ctrl_mode = BULLET_RESET;
+//		bullet.ctrl_mode = BULLET_RESET;
 	}
 	if(rc.kb.bit.X&&rc_kb_X_flag==0)	//取弹下一步   x
 	{
@@ -337,7 +314,6 @@ void kb_handle(void)
 	if(rc.kb.bit.X==0&&rc_kb_X_flag)
 	{
 		rc_kb_X_flag = 0;
-		bullet.step_flag = 1;
 	}
 }
 
@@ -347,77 +323,43 @@ void get_global_last_mode(void)
 	last_func_mode = func_mode;
 }
 
-
-void keyborad_bullet_handle_controller(void)
-{	
-	switch(bullet_setp)
+/**
+  * @brief  自动取一箱子弹
+  * @param  void
+  * @retval void
+  * @attention  当调用这个函数,bullet_step_single为SINGLE_READY则开始取单箱弹
+  */
+void get_bullet_single(void)
+{
+	switch(bullet_step_single)
 	{
-	case VOID_HANDLE:
-	{
-		if(bullet_flag1)
+		case SINGLE_READY:
 		{
-			slip.ctrl_mode = SLIP_AUTO;
-			rotate.ctrl_mode = ROTATE_AUTO;
-			if(slip.state==SLIP_KNOWN && rotate.state==ROTATE_KNOWN)
-			{
-				bullet_flag1 = 0;
-				bullet_setp = LEFT_POS;
-			}
-		}
-	}break;
-	
-	case LEFT_POS:
-	{
-		if(bullet_flag1==1)
-		{
-			slip.dist_ref = 5.2f;
 			rotate.cnt_ref = 600;
-			if(fabs((float)(slip.dist_fdb-5.2f))<10)
+			
+			if(fabs((float)(rotate.cnt_fdb-600.0f))<10)
 			{
-//				bullet_flag1=0;
-			  bullet_setp = ROT_OUT;
-				pump.press_ctrl_mode = ON_MODE;
-				
-				
-//				/*自动进入下一步*/
-//				ready_flag=1;
-//				/*自动进入下一步*/
-				
-				
+				bullet_step_single = ROT_OUT;
+				pump.press_ctrl_mode = ON_MODE;						
 			}
-			else if(fabs((double)(slip.dist_fdb))<420)
+			else if(rotate.cnt_fdb>300)
 			{
 				pump.press_ctrl_mode = ON_MODE;
 			}
-		}
+			
+		}break;
 
-	}break;
-	
-	case ROT_OUT:
-	{
-		if(bullet_flag1==1)
+		case ROT_OUT:
 		{
-			
-			
 			rotate.cnt_ref = 1000;
-			
 			if(fabs((double)(rotate.cnt_fdb-1000))<40)
 			{
-//				bullet_flag1=0;
-				bullet_setp = ROT_OFF;
+				bullet_step_single = ROT_OFF;
 				handle_fetch_time=0;
-				
-//			/*自动进入下一步*/
-//			ready_flag=1;
-//			/*自动进入下一步*/
-				
 			}
-		}
-
-	}break;
-	case ROT_OFF:
-	{
-		if(bullet_flag1==1)
+		}break;
+		
+		case ROT_OFF:
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode =OFF_MODE;
@@ -425,241 +367,312 @@ void keyborad_bullet_handle_controller(void)
 			if(handle_fetch_time>65)
 			{
 				rotate.cnt_ref = 170;
+				
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{
-//					bullet_flag1=0;
-					bullet_setp = TAKE_OFF_AND_OUT;
+					bullet_step_single = TAKE_OFF;
 					handle_fetch_time=0;
-
-//					/*自动进入下一步*/
-//					ready_flag=1;
-//					/*自动进入下一步*/
-				}
-				else if(fabs((double)(rotate.cnt_fdb-170))<120)
-				{
-					slip.dist_ref = 493.6f;
-				}						
+				}					
 		 }
-			
-		}
-
-	}break;
-	
-	case TAKE_OFF_AND_OUT:
-	{
+		}break;
 		
-		slip.dist_ref = 493.6f;
-		if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-493.6f))<15)
+		case TAKE_OFF:
 		{
 			handle_fetch_time++;
 			pump.press_ctrl_mode = ON_MODE;
+				
 			if(handle_fetch_time>58)
 			{
 				pump.throw_ctrl_mode = ON_MODE;
+				rotate.cnt_ref = 400;				
+					
+				if(fabs((float)(rotate.cnt_fdb-400))<40)
+				{	
+					handle_fetch_time=0;
+					bullet_step_single = BULLET_RESET_STEP;					
+				}			
+			}	
+			
+		}break;
+		
+		case BULLET_RESET_STEP:
+		{
+			pump.throw_ctrl_mode = OFF_MODE;
+			pump.press_ctrl_mode = OFF_MODE;
+//			bullet_step_single = SINGLE_READY;
+
+		}break;
+		
+		
+				
+		default:
+		break;
+	}
+}
+
+/**
+  * @brief  自动取前面三箱子弹
+  * @param  void
+  * @retval void
+  * @attention  当调用这个函数,把bullet_step_front改为AIM_BULLET后进入取弹瞄准,把bullet_flag1置1开始取弹
+  */
+void get_bullet_front(void)
+{	
+	switch(bullet_step_front)
+	{
+		case AIM_BULLET:
+		{			
+			slip.dist_ref = 5.2f;
+//			chassis.ctrl_mode = CHASSIS_RC_NEAR;//激光贴墙对位
+			chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;
+			
+			if(bullet_flag1)
+			{
+				bullet_flag1 = 0;
+				bullet_step_front = LEFT_POS;
+				chassis.ctrl_mode = CHASSIS_STAY;
+			}
+		}break;
+		
+		case LEFT_POS:
+		{
+			if(bullet_flag1)
+			{
+				rotate.cnt_ref = 600;
+				
+				if(fabs((float)(slip.dist_fdb-5.2f))<10)
+				{
+//					bullet_flag1=0;
+					bullet_step_front = ROT_OUT_LEFT;
+					pump.press_ctrl_mode = ON_MODE;
+							
+				}
+				else if(fabs((double)(slip.dist_fdb))<420)
+				{
+					pump.press_ctrl_mode = ON_MODE;
+				}
+			}
+
+		}break;
+		
+		case ROT_OUT_LEFT:
+		{
+			if(bullet_flag1)
+			{
+				
 				rotate.cnt_ref = 1000;
 				
-					
-				if(fabs((float)(rotate.cnt_fdb-1000))<40)
-				{			
-					handle_fetch_time2=0;
-					handle_fetch_time=0;
+				if(fabs((double)(rotate.cnt_fdb-1000))<40)
+				{
 //					bullet_flag1=0;
-					bullet_setp = ROT_OFF_MID;
-					
-//					/*自动进入下一步*/
-//					ready_flag=1;
-//					/*自动进入下一步*/
-				}			
-			}			
-		}
-	}break;
-	
-	
-	case ROT_OFF_MID:
-	{
-		if(bullet_flag1==1)
-		{
-			handle_fetch_time++;
-			pump.press_ctrl_mode =OFF_MODE;
-			
-			if(handle_fetch_time>35)
-			pump.throw_ctrl_mode = OFF_MODE;
+					bullet_step_front = ROT_OFF_LEFT;
+					handle_fetch_time=0;
+				}
+			}
 
-			if(handle_fetch_time>70)
+		}break;
+		case ROT_OFF_LEFT:
+		{
+			if(bullet_flag1)
 			{
+				handle_fetch_time++;
+				pump.press_ctrl_mode =OFF_MODE;
+				
+				if(handle_fetch_time>65)
+				{
+					rotate.cnt_ref = 170;
+					
+					if(fabs((double)(rotate.cnt_fdb-170))<15)
+					{
+//						bullet_flag1=0;
+						bullet_step_front = TAKE_OFF_AND_OUT;
+						handle_fetch_time=0;
+					}
+					else if(fabs((double)(rotate.cnt_fdb-170))<120)
+					{
+						slip.dist_ref = 493.6f;
+					}						
+			 }
+				
+			}
+
+		}break;
+		
+		case TAKE_OFF_AND_OUT:
+		{
+			
+			slip.dist_ref = 493.6f;
+			
+			if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-493.6f))<15)
+			{
+				handle_fetch_time++;
+				pump.press_ctrl_mode = ON_MODE;
+				
+				if(handle_fetch_time>58)
+				{
+					pump.throw_ctrl_mode = ON_MODE;
+					rotate.cnt_ref = 1000;				
+						
+					if(fabs((float)(rotate.cnt_fdb-1000))<40)
+					{			
+						handle_fetch_time2=0;
+						handle_fetch_time=0;
+//						bullet_flag1=0;
+						bullet_step_front = ROT_OFF_MID;
+						
+					}			
+				}			
+			}
+		}break;
+		
+		
+		case ROT_OFF_MID:
+		{
+			if(bullet_flag1)
+			{
+				handle_fetch_time++;
+				pump.press_ctrl_mode =OFF_MODE;
+				
+				if(handle_fetch_time>35)
+				pump.throw_ctrl_mode = OFF_MODE;
+
+				if(handle_fetch_time>70)
+				{
+					rotate.cnt_ref = 170;
+					
+					if(fabs((double)(rotate.cnt_fdb-170))<15)
+					{			
+//						bullet_flag1=0;
+						bullet_step_front = TAKE_OFF_AND_OUT_MID;
+						handle_fetch_time=0;
+						handle_fetch_time2=0;
+						
+					}
+					else if(fabs((double)(rotate.cnt_fdb-170))<120)
+					{
+						slip.dist_ref = 992.6f;
+					}	
+				}
+				
+			}
+		}break;
+		
+		case TAKE_OFF_AND_OUT_MID:
+		{
+			slip.dist_ref = 992.4f;
+			
+			if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-992.6f))<15)
+			{
+				handle_fetch_time++;
+				pump.press_ctrl_mode = ON_MODE;
+				
+				if(handle_fetch_time>58)
+				{
+					pump.throw_ctrl_mode = ON_MODE;
+					rotate.cnt_ref = 1000;
+				
+					
+					if(fabs((double)(rotate.cnt_fdb-1000))<20)
+					{					
+						handle_fetch_time2=0;
+						handle_fetch_time=0;
+//						bullet_flag1=0;
+						bullet_step_front = ROT_OFF_FINAL;	
+						
+					}
+				}
+				
+			}
+
+		}break;
+		
+		case ROT_OFF_FINAL:
+		{
+		
+			if(bullet_flag1)
+			{
+				handle_fetch_time++;
+				pump.press_ctrl_mode =OFF_MODE;
+				
+				if(handle_fetch_time>35)
+				pump.throw_ctrl_mode = OFF_MODE;
+				
+				if(handle_fetch_time>70)
+				{
 				rotate.cnt_ref = 170;
+					
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
-				{			
+				{
 //					bullet_flag1=0;
-					bullet_setp = TAKE_OFF_AND_OUT_MID;
+					bullet_step_front = TAKE_OFF_FINAL;
 					handle_fetch_time=0;
 					handle_fetch_time2=0;
-					
-//					/*自动进入下一步*/
-//					ready_flag=1;
-//					/*自动进入下一步*/
+						
 				}
 				else if(fabs((double)(rotate.cnt_fdb-170))<120)
 				{
-					slip.dist_ref = 992.6f;
+					slip.dist_ref = 493.5f;
 				}	
 			}
-			
-		}
-	}break;
-	
-	case TAKE_OFF_AND_OUT_MID:
-	{
-		slip.dist_ref = 992.4f;
-		if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-992.6f))<15)
-		{
-			handle_fetch_time++;
-			pump.press_ctrl_mode = ON_MODE;
-			if(handle_fetch_time>58)
-			{
-				pump.throw_ctrl_mode = ON_MODE;
-				rotate.cnt_ref = 1000;
-			
 				
-				if(fabs((double)(rotate.cnt_fdb-1000))<20)
-				{					
-					handle_fetch_time2=0;
-					handle_fetch_time=0;
-//					bullet_flag1=0;
-					bullet_setp = ROT_OFF_FINAL;	
-					
-//					/*自动进入下一步*/
-//					ready_flag=1;
-//					/*自动进入下一步*/
-				}
 			}
-			
-		}
-
-	}break;
-	
-	case ROT_OFF_FINAL:
-	{
-	
-			if(bullet_flag1==1)
+		
+		}break;
+		
+		case TAKE_OFF_FINAL:
 		{
-			handle_fetch_time++;
-			pump.press_ctrl_mode =OFF_MODE;
+		
+			slip.dist_ref = 493.5f;
 			
-			if(handle_fetch_time>35)
-			pump.throw_ctrl_mode = OFF_MODE;
-			
-			if(handle_fetch_time>70)
+			if(bullet_flag1)
 			{
-			rotate.cnt_ref = 170;
-			if(fabs((double)(rotate.cnt_fdb-170))<15)
-			{
-//				bullet_flag1=0;
-				bullet_setp = TAKE_OFF_FINAL;
-				handle_fetch_time=0;
-				handle_fetch_time2=0;
+				handle_fetch_time++;
+				pump.press_ctrl_mode = ON_MODE;
 				
-				
-//				/*自动进入下一步*/
-//				ready_flag=1;
-//				/*自动进入下一步*/				
-			}
-			else if(fabs((double)(rotate.cnt_fdb-170))<120)
-			{
-				slip.dist_ref = 493.5f;
-			}	
-		}
-			
-		}
-	
-	}break;
-	
-	case TAKE_OFF_FINAL:
-	{
-	
-		slip.dist_ref = 493.5f;
-		if(bullet_flag1==1 )
-		{
-			handle_fetch_time++;
-			pump.press_ctrl_mode = ON_MODE;
-			if(handle_fetch_time>58)
-			{
-				pump.throw_ctrl_mode = ON_MODE;
-				rotate.cnt_ref = 500;
-				
-				
-				if(fabs((double)(rotate.cnt_fdb-500))<50)
+				if(handle_fetch_time>58)
 				{
-						handle_fetch_time2++;
-						
+					pump.throw_ctrl_mode = ON_MODE;
+					rotate.cnt_ref = 500;		
 					
-						if(handle_fetch_time2>60)
-						{
-							pump.throw_ctrl_mode = OFF_MODE;
-							rotate.cnt_ref = 200;
-//							bullet_flag1=0;
-							handle_fetch_time=0;
-							handle_fetch_time2=0;
-							bullet_setp = BULLET_HOLD_ON;
-								
-//							/*自动进入下一步*/
-//							ready_flag=1;
-//							/*自动进入下一步*/					
-						}			
+					if(fabs((double)(rotate.cnt_fdb-500))<50)
+					{
+							handle_fetch_time2++;
+							
+						
+							if(handle_fetch_time2>60)
+							{
+								pump.throw_ctrl_mode = OFF_MODE;
+								rotate.cnt_ref = 200;
+//								bullet_flag1=0;
+								handle_fetch_time=0;
+								handle_fetch_time2=0;
+								bullet_step_front = BULLET_RESET_STEP;												
+							}			
+					}
 				}
 			}
-		}
-	}break;
-	
-	case BULLET_HOLD_ON:
-	{		
-		if(bullet_flag1)
+		}break;
+		
+		
+		case BULLET_RESET_STEP:
 		{
-			bullet_setp = BULLET_RESET_STEP;
-			bullet_flag1=0;
-		}	
-	}break;
-	
-	case BULLET_RESET_STEP:
-	{
-
-		uplift.ctrl_mode = UPLIFT_STOP;
-		slip.ctrl_mode = SLIP_STOP;
-		rotate.ctrl_mode = ROTATE_STOP;
-		
-		pump.press_ctrl_mode = OFF_MODE;
-		pump.throw_ctrl_mode = OFF_MODE;
-				
-		rotate.state = ROTATE_UNKNOWN;
-		rotate.ecd_offset = moto_rotate[0].total_ecd;
-		rotate.ecd_offset=0;
-		rotate.cnt_ref=0;
-		slip.state = SLIP_UNKNOWN;
-		slip.dist_offset=0;
-		
-		if(bullet_flag1)
-		{	
-			bullet_setp = VOID_HANDLE;
+			uplift.ctrl_mode = UPLIFT_STOP;
+			slip.ctrl_mode = SLIP_STOP;
+			rotate.ctrl_mode = ROTATE_STOP;
 			
+			pump.press_ctrl_mode = OFF_MODE;
+			pump.throw_ctrl_mode = OFF_MODE;
+
+			bullet_step_front = AIM_BULLET;
 			bullet_flag1=0;
 			handle_fetch_time2=0;
 			handle_fetch_time=0;			
-		}
+			
+		}break;
 		
-	}break;
-	
-	case BULLET_SAFETY_MODE:
-	{
-		chassis.ctrl_mode = CHASSIS_STOP;
-		uplift.ctrl_mode = UPLIFT_STOP;
-		slip.ctrl_mode = SLIP_STOP;
-		rotate.ctrl_mode = ROTATE_STOP;
+		default:
+		break;
 		
-		pump.press_ctrl_mode = OFF_MODE;
-		pump.throw_ctrl_mode = OFF_MODE;
-
-	}break;
-	
 	}
 
 }

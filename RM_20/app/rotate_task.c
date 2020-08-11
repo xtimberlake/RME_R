@@ -83,7 +83,7 @@ void rotate_task(void const *argu)
 			 {
 				rotate.current[0] = 0; //µç»úÍ£×ª
 				rotate.current[1] = 0;
-
+				rotate.cnt_ref = rotate.cnt_fdb;
 			 }break;	
 			 
 			 case ROTATE_AUTO:
