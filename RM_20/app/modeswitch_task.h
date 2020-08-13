@@ -34,16 +34,17 @@ typedef enum
 //功能模式
 typedef enum
 {
-  GET_BULLET1_MODE,
-	GET_BULLET2_MODE,
-	GIVE_BULLET_MODE,
 	MOVE_MODE,
+	GET_BULLET_SINGLE_MODE,	//取单箱
+  GET_BULLET_FRONT_MODE,	//取前面三箱
+	GET_BULLET_T_MODE,			//取T形四箱
+	GET_BULLET_TWO_MODE,		//取前后六箱
+	GIVE_BULLET_MODE,
 } func_mode_e;
 
 typedef enum 
 {
 	CAMERA_NORMAL_MODE,
-	CAMERA_CLIMB_MODE,
 	CAMERA_BULLET_MODE,	
 	CAMERA_HELP_MODE,
 }camera_mode_e;
@@ -51,7 +52,7 @@ typedef enum
 
 typedef enum
 {
-	void_handle,//占位,进入时不做任何操作
+	VOID_HANDLE,//占位,进入时不做任何操作
 	AIM_BULLET,
 	
 	//单箱
@@ -79,7 +80,6 @@ typedef enum
 //	BULLET_SAFETY_MODE,
 	
 }bullet_step_e;//用状态描述取弹流程
-
 
 
 __MODESW_TASK_EXT bullet_step_e		bullet_step_front;

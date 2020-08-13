@@ -84,12 +84,13 @@ void chassis_task(void const *argu)
 			chassis_ramp();
 			chassis.vx = (float)(chassis_x_ramp.out);
 			chassis.vy = (float)(chassis_y_ramp.out);
-			if(abs(rc.mouse.x)>10)
-			{
-				chassis.vw=chassis_mouse_w_ramp.out;
-			}
-			else
-			chassis.vw = 0.3*(double)chassis_w_ramp.out;
+			chassis.vw = rc.mouse.x*-30;
+//			if(abs(rc.mouse.x)>2)
+//			{
+//				chassis.vw=chassis_mouse_w_ramp.out;
+//			}
+//			else
+//			chassis.vw = 0.3*(double)chassis_w_ramp.out;
 		}break;
 		
 		case CHASSIS_RC_NEAR: //激光测距方案贴资源岛行走

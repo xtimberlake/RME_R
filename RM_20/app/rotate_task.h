@@ -61,7 +61,6 @@ typedef struct
 __ROTATE_TASK_EXT rotate_t rotate;
 
 void rotate_task(void const *argu);
-void keyborad_bullet_handle(void);
 
 void rotate_init(void);
 

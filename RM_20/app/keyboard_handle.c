@@ -1,3 +1,11 @@
+/** 
+  * @file 		keyboard_handle.c
+  * @version 	0.9
+  * @date 		Jan,18 2020
+  * @brief  	键盘模式操作文件
+  *	@author 	Taurus 2020
+  */
+	
 #define __KEYBOARD_HANDLE_GLOBALS
 #include "keyboard_handle.h"
 #include "modeswitch_task.h"
@@ -14,6 +22,15 @@
 #include "remote_msg.h"
 #include "math_calcu.h"
 
+uint8_t single_bullet_postion = 0;
+
+//单击标志位
+uint8_t one_click_G_flag = 1;
+uint8_t one_click_mouseL_flag = 1;
+uint8_t one_click_bullet_flag = 1;
+uint8_t one_click_single_pos_flag = 1;
+uint8_t one_click_help_flag = 1;
+uint8_t one_click_give_bullet = 1;
 
 uint8_t safety_0=0;
 uint8_t ready_play=0;
@@ -21,18 +38,112 @@ uint32_t handle_time=0;
 uint32_t handle_time2=0;
 
 uint32_t handle_times=0;
-uint8_t on=0;
 static uint8_t step = 0;
 
 ramp_function_source_t chassis_auto_ramp;
 
-/** 
-  * @file 		keyboard_handle.c
-  * @version 	0.9
-  * @date 		Jan,18 2020
-  * @brief  	键盘模式操作文件
-  *	@author 	Taurus 2020
-  */
+	
+/**
+  * @brief      键盘控制函数
+  * @param[in]  none
+  * @retval     none
+	* @note				=v=
+	*							
+  */	
+void keyboard_handle()
+{
+	rotate.ctrl_mode = ROTATE_AUTO;
+	slip.ctrl_mode = SLIP_AUTO;
+	uplift.ctrl_mode = UPLIFT_AUTO;
+	
+	if(rc.kb.bit.R && func_mode!=MOVE_MODE)				{func_mode = MOVE_MODE;}
+	else if(rc.kb.bit.R)
+	{
+		pump.help_ctrl_mode = OFF_MODE;
+		pump.help_ctrl_mode = OFF_MODE;
+		electrical.magazine_ctrl_mode = OFF_MODE;
+	}
+	bullet_ctrl_switch_fun();
+	
+	keyboard_chassis_ctrl();//底盘速度控制
+		
+	
+	switch (func_mode)
+	{
+		
+		case(MOVE_MODE):
+		{
+			if(rc.kb.bit.V)//按v切换救援夹子状态
+			{
+				if(one_click_help_flag)
+				{
+					if(pump.help_ctrl_mode == ON_MODE)
+					{
+						pump.help_ctrl_mode = OFF_MODE;
+					}else
+					{ pump.help_ctrl_mode = ON_MODE; }
+					one_click_help_flag = 0;
+				}	
+			}else {one_click_help_flag = 1;}
+			
+			if(rc.kb.bit.G)//按住g开始给弹
+			{
+				pump.bullet1_ctrl_mode = ON_MODE;
+				electrical.magazine_ctrl_mode = ON_MODE;
+			}else 
+			{
+				pump.bullet1_ctrl_mode = OFF_MODE;
+				electrical.magazine_ctrl_mode = OFF_MODE;
+			}
+		}break;
+		
+		case(GET_BULLET_SINGLE_MODE):
+ 		{
+			bullet_single_handle();
+			if(rc.mouse.l)
+			{bullet_step_single = SINGLE_READY;}
+			
+			if(rc.kb.bit.C)//取弹停止
+			{bullet_step_single = BULLET_RESET_STEP;}
+			
+			get_bullet_single();
+		}break;
+		
+		case(GET_BULLET_FRONT_MODE):
+		{
+			
+			if(rc.mouse.l)
+			{			
+				if(one_click_mouseL_flag)
+				{
+					if(bullet_step_front!=AIM_BULLET)
+					{
+						bullet_step_front = AIM_BULLET;
+					} else
+					{
+						bullet_step_front = ROT_OUT_LEFT;
+					}
+					one_click_mouseL_flag = 0;
+				}	
+			}else {one_click_mouseL_flag = 1;}
+			
+			if(rc.kb.bit.C)//取弹停止
+			{bullet_step_front = BULLET_RESET_STEP;}
+			
+			get_bullet_front();
+		}break;
+		
+		
+		
+		
+		
+		
+		default:
+		break;
+	}
+	
+	
+}
 
 void safety_first()
 {
@@ -43,80 +154,14 @@ void safety_first()
 	pump.press_ctrl_mode=OFF_MODE;
 	pump.throw_ctrl_mode=OFF_MODE;
 }
-void keyboard_handle()
+
+//
+void reset_all()
 {
-	//无遥控器的弟弟调试函数
-	
-	//模式选择：底盘、云台、抬升、横移、转动
-	taskENTER_CRITICAL();
-	
-	if(last_glb_ctrl_mode != KB_MODE)
-	{
-	chassis.cnt_offset =  moto_chassis[0].total_ecd/409.6f;
-	chassis.cnt_fdb =  moto_chassis[0].total_ecd/409.6f  -  chassis.cnt_offset;
-	chassis.cnt_ref = chassis.cnt_fdb;
-	}
-	else
-	{
-		chassis.ctrl_mode = CHASSIS_RC_NEAR;
-	
-		if(rc.kb.bit.W)
-		{
-			ramp_calc_remain(&chassis_auto_ramp,0.01f,10.f);			
-		}
-		else if(rc.kb.bit.S)
-		{
-			ramp_calc_remain(&chassis_auto_ramp,0.01f,-10.f);			
-		}
-		
-		chassis.cnt_ref = chassis_auto_ramp.out;
-			
-	}
-	
-	  
-	slip.ctrl_mode = SLIP_AUTO;
-	
-	uplift.ctrl_mode = UPLIFT_STOP;
-	
-	rotate.ctrl_mode = ROTATE_AUTO;
-	
-  keyborad_bullet_handle();
-	
-	
-	
-	
-	//if(safety_0==0) safety_first();
-	//else keyborad_bullet_handle();
-	
-	
-	
-	taskEXIT_CRITICAL();
-	
-}
-void debug_slip()
-{
-	slip.ctrl_mode = SLIP_AUTO;
-	chassis.ctrl_mode = CHASSIS_STOP;
-	uplift.ctrl_mode = UPLIFT_STOP;
-	rotate.ctrl_mode = ROTATE_STOP;
-	pump.press_ctrl_mode=OFF_MODE;
-	pump.throw_ctrl_mode=OFF_MODE;
 	
 }
 
-void keyborad_bullet_handle(void)
-{
-	
-	if(slip.state == SLIP_KNOWN)
-	{
-		if(rc.kb.bit.Z) slip.dist_ref = 5.2f;
-		else if(rc.kb.bit.X) slip.dist_ref = 493.6f;
-		else if(rc.kb.bit.C) slip.dist_ref = 992.6f;
-	}
-	
-	if(rotate.state==ROTATE_KNOWN && slip.state==SLIP_KNOWN)
-	one_shot();	
-}
+
 
 
 /**
@@ -130,26 +175,83 @@ void keyborad_bullet_handle(void)
 
 void keyboard_chassis_ctrl()
 {
-	
-	if(rc.mouse.r && glb_ctrl_mode == RC_BULLET_MODE)  						{	chassis.ctrl_mode = CHASSIS_KB_NEAR; 		chassis_speed = SPEED_SLOW;		 	}
-  else if(rc.kb.bit.CTRL) 		{	chassis_speed = SPEED_SLOW; 						chassis.ctrl_mode = CHASSIS_KB;	}
-	else if (rc.kb.bit.SHIFT)		{	chassis_speed = SPEED_FAST; 						chassis.ctrl_mode = CHASSIS_KB;	}
-	else												{	chassis_speed = SPEED_NORMAL; 					chassis.ctrl_mode = CHASSIS_KB;	}
-	
+	if(func_mode == MOVE_MODE)
+	{
+		if(rc.kb.bit.CTRL) 					{	chassis_speed = SPEED_SLOW; 						chassis.ctrl_mode = CHASSIS_KB;	}
+		else if (rc.kb.bit.SHIFT)		{	chassis_speed = SPEED_FAST; 						chassis.ctrl_mode = CHASSIS_KB;	}
+		else												{	chassis_speed = SPEED_NORMAL; 					chassis.ctrl_mode = CHASSIS_KB;	}
+	}
 }
 /**
-  * @brief      比赛模式下取弹总控制函数
+  * @brief      比赛模式下取弹模式切换函数
   * @param[in]  none
   * @retval     none
-	* @note				操作说明：
-								1、取弹时，鼠标按住右键进行贴紧资源岛，横移机构在中间位置，抬升上升
-								2、松开后，退出取弹模式，复位
+	* @note				1、取弹时，鼠标按住右键底盘进入取弹瞄准模式,默认为取单箱模式,按Z/X/C切换为前面三箱/T形/前后六箱模式
+	*							2、松开后，退出取弹模式，复位
   */
-void fetch_bullet_ctrl_fun()
+void bullet_ctrl_switch_fun()
 {
-	
+	if(rc.mouse.r)
+	{
+		if(one_click_bullet_flag)
+		{
+			func_mode = GET_BULLET_SINGLE_MODE;
+			one_click_bullet_flag = 0;
+		}
+		if(rc.kb.bit.Z)					{	func_mode = GET_BULLET_FRONT_MODE;	}
+		else if(rc.kb.bit.X) 		{	func_mode = GET_BULLET_T_MODE;			}
+		else if (rc.kb.bit.C)		{	func_mode = GET_BULLET_TWO_MODE;		}											
+	} else	{ one_click_bullet_flag = 1; }
+}
 
-
+/**
+  * @brief      取单箱模式下的取弹机构位置控制函数
+  * @param[in]  none
+  * @retval     none
+	* @note				V/B控制取弹机构向左/右,G控制取弹机构伸出/收回
+	*							
+  */
+void bullet_single_handle(void)
+{
+	if(func_mode == GET_BULLET_SINGLE_MODE)
+	{
+		if(rc.kb.bit.G)
+		{
+			if(one_click_G_flag)
+			{
+				if(pump.bracket_ctrl_mode == OFF_MODE)
+				{
+					pump.bracket_ctrl_mode = ON_MODE;
+				}else
+				{ pump.bracket_ctrl_mode = OFF_MODE; }
+				one_click_G_flag = 0;
+			}	
+		}else {one_click_G_flag = 1;}
+		
+		if(rc.kb.bit.V && single_bullet_postion>0)
+		{
+			if(one_click_single_pos_flag)
+			{
+				single_bullet_postion-=1;
+				one_click_single_pos_flag = 0;
+			}
+		}else if(rc.kb.bit.B && single_bullet_postion<2) 
+		{
+			if(one_click_single_pos_flag)
+			{
+				single_bullet_postion+=1;
+				one_click_single_pos_flag = 0;
+			}
+		}else {one_click_single_pos_flag = 1;}
+		
+		switch (single_bullet_postion)
+		{
+			case 0: {slip.dist_ref = 5.2f;	}break;
+			case 1: {slip.dist_ref = 493.6f;}break;
+			case 2: {slip.dist_ref = 992.6f;}break;
+		}
+		
+	}
 }
 
 /**

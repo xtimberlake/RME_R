@@ -45,12 +45,14 @@ __KEYBOARD_HANDLE_EXT bullet_status_e bullet_status;
 
 
 
+void keyboard_handle(void);
+void mode_crtl_handle(void);
 
 
 void debug_slip(void);
 void keyborad_bullet_handle(void);
-void fetch_bullet_ctrl_fun(void);
-void keyboard_handle(void);
+void bullet_ctrl_switch_fun(void);
+void bullet_single_handle(void);
 void keyboard_chassis_ctrl(void);
 void keyboard_uplift_ctrl(void);
 void reset_bullet(void);

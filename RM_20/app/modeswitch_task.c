@@ -59,9 +59,7 @@ float servo_yaw_pwm=2080;
 uint8_t rc_kb_X_flag=0;
 uint8_t rc_kb_R_flag=0;
 uint8_t rc_ch4_flag=0;
-uint8_t bullet_flag1=0;//取前面三箱
-uint8_t bullet_flag2=0;//取T形四箱
-uint8_t bullet_flag3=0;//取前后六箱
+
 
 #define MOUSE_SPEED_SLOW		50
 #define MOUSE_SPEED_NORMAL	100
@@ -122,7 +120,7 @@ void get_main_ctrl_mode(void)
 				
 				case RC_DN:
 				{
-					//调试模式/初始化全部
+//					//调试模式/初始化全部
 					
 					slip.state = SLIP_KNOWN;
 					slip.ctrl_mode = SLIP_AUTO;
@@ -130,7 +128,9 @@ void get_main_ctrl_mode(void)
 					rotate.state = ROTATE_KNOWN;
 					rotate.ctrl_mode = ROTATE_AUTO;
 
-					chassis.ctrl_mode = CHASSIS_STAY;					
+					chassis.ctrl_mode = CHASSIS_STAY;
+//					chassis_speed = SPEED_NORMAL;
+//					chassis.ctrl_mode = CHASSIS_KB;					
 				}break;
 			}
 			
@@ -149,8 +149,6 @@ void get_main_ctrl_mode(void)
 		{
 		//键盘模式
 			glb_ctrl_mode = KB_MODE;
-			
-		//kb_handle();
 			
 			keyboard_handle();
 		}break;
@@ -223,12 +221,10 @@ void rc_bullet_handle(void)
 		safety_mode_handle();
 		pump.press_ctrl_mode = OFF_MODE;
 		pump.throw_ctrl_mode = OFF_MODE;
-		bullet_flag1 = 0;
 		rc5_flag = 0;				
 	}
 	else if(rc5_flag==2&&rc.ch5>-250&&rc.ch5<250)
 	{
-			bullet_flag1 = 1;	//取弹标志位进一
 			rc5_flag = 0;		
 	}
 }
@@ -260,7 +256,7 @@ void kb_handle(void)
 			servo_pit_pwm = PIT_PWM_LCD;
 			servo_yaw_pwm = YAW_PWM_LCD;
 			electrical.camera_ctrl_mode = ON_MODE;
-			camera_mode = CAMERA_CLIMB_MODE;
+//			camera_mode = CAMERA_CLIMB_MODE;
 			camera_flag = -1;
 		}
 		else
@@ -296,8 +292,8 @@ void kb_handle(void)
 	else 								{chassis_speed = 3800; mouse_speed = MOUSE_SPEED_NORMAL;}
 
 	
-	if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
-	else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
+//	if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
+//	else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
 
 	if(rc.kb.bit.Z)	//各种复位		z
 	{
@@ -306,8 +302,8 @@ void kb_handle(void)
 	if(rc.kb.bit.X&&rc_kb_X_flag==0)	//取弹下一步   x
 	{
 		rc_kb_X_flag = 1;
-		if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
-		else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
+//		if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
+//		else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
 //		if(rc.kb.bit.SHIFT)	func_mode = GET_BULLET2_MODE;
 //		else func_mode = GET_BULLET1_MODE;
 	}
@@ -397,13 +393,12 @@ void get_bullet_single(void)
 		
 		case BULLET_RESET_STEP:
 		{
+			rotate.cnt_ref = 400;	
+			handle_fetch_time=0;
 			pump.throw_ctrl_mode = OFF_MODE;
 			pump.press_ctrl_mode = OFF_MODE;
-//			bullet_step_single = SINGLE_READY;
-
+			bullet_step_single = VOID_HANDLE;
 		}break;
-		
-		
 				
 		default:
 		break;
@@ -423,78 +418,70 @@ void get_bullet_front(void)
 		case AIM_BULLET:
 		{			
 			slip.dist_ref = 5.2f;
+			rotate.cnt_ref = 600;
+			
+			if(fabs((float)(rotate.cnt_ref-600.0f))<40)
+			{pump.press_ctrl_mode = ON_MODE;}
 //			chassis.ctrl_mode = CHASSIS_RC_NEAR;//激光贴墙对位
 			chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;
 			
-			if(bullet_flag1)
-			{
-				bullet_flag1 = 0;
-				bullet_step_front = LEFT_POS;
-				chassis.ctrl_mode = CHASSIS_STAY;
-			}
 		}break;
 		
-		case LEFT_POS:
-		{
-			if(bullet_flag1)
-			{
-				rotate.cnt_ref = 600;
-				
-				if(fabs((float)(slip.dist_fdb-5.2f))<10)
-				{
-//					bullet_flag1=0;
-					bullet_step_front = ROT_OUT_LEFT;
-					pump.press_ctrl_mode = ON_MODE;
-							
-				}
-				else if(fabs((double)(slip.dist_fdb))<420)
-				{
-					pump.press_ctrl_mode = ON_MODE;
-				}
-			}
+//		case LEFT_POS:
+//		{
 
-		}break;
+//			chassis.ctrl_mode = CHASSIS_STAY;
+////			rotate.cnt_ref = 600;
+//			
+//			if(fabs((float)(slip.dist_fdb-5.2f))<10)
+//			{
+////					bullet_flag1=0;
+//				bullet_step_front = ROT_OUT_LEFT;
+//				pump.press_ctrl_mode = ON_MODE;
+//						
+//			}
+//			else if(fabs((double)(slip.dist_fdb))<420)
+//			{
+//				pump.press_ctrl_mode = ON_MODE;
+//			}
+//				
+//		}break;
 		
 		case ROT_OUT_LEFT:
 		{
-			if(bullet_flag1)
+		
+			rotate.cnt_ref = 1000;
+			
+			if(fabs((double)(rotate.cnt_fdb-1000))<40)
 			{
-				
-				rotate.cnt_ref = 1000;
-				
-				if(fabs((double)(rotate.cnt_fdb-1000))<40)
-				{
 //					bullet_flag1=0;
-					bullet_step_front = ROT_OFF_LEFT;
-					handle_fetch_time=0;
-				}
+				bullet_step_front = ROT_OFF_LEFT;
+				handle_fetch_time=0;
 			}
 
 		}break;
+		
 		case ROT_OFF_LEFT:
 		{
-			if(bullet_flag1)
+			
+			handle_fetch_time++;
+			pump.press_ctrl_mode =OFF_MODE;
+			
+			if(handle_fetch_time>65)
 			{
-				handle_fetch_time++;
-				pump.press_ctrl_mode =OFF_MODE;
+				rotate.cnt_ref = 170;
 				
-				if(handle_fetch_time>65)
+				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{
-					rotate.cnt_ref = 170;
-					
-					if(fabs((double)(rotate.cnt_fdb-170))<15)
-					{
 //						bullet_flag1=0;
-						bullet_step_front = TAKE_OFF_AND_OUT;
-						handle_fetch_time=0;
-					}
-					else if(fabs((double)(rotate.cnt_fdb-170))<120)
-					{
-						slip.dist_ref = 493.6f;
-					}						
-			 }
-				
-			}
+					bullet_step_front = TAKE_OFF_AND_OUT;
+					handle_fetch_time=0;
+				}
+				else if(fabs((double)(rotate.cnt_fdb-170))<120)
+				{
+					slip.dist_ref = 493.6f;
+				}						
+		 }
 
 		}break;
 		
@@ -503,7 +490,7 @@ void get_bullet_front(void)
 			
 			slip.dist_ref = 493.6f;
 			
-			if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-493.6f))<15)
+			if(fabs((float)(slip.dist_fdb-493.6f))<15)
 			{
 				handle_fetch_time++;
 				pump.press_ctrl_mode = ON_MODE;
@@ -528,40 +515,38 @@ void get_bullet_front(void)
 		
 		case ROT_OFF_MID:
 		{
-			if(bullet_flag1)
-			{
-				handle_fetch_time++;
-				pump.press_ctrl_mode =OFF_MODE;
-				
-				if(handle_fetch_time>35)
-				pump.throw_ctrl_mode = OFF_MODE;
+			
+			handle_fetch_time++;
+			pump.press_ctrl_mode =OFF_MODE;
+			
+			if(handle_fetch_time>35)
+			pump.throw_ctrl_mode = OFF_MODE;
 
-				if(handle_fetch_time>70)
-				{
-					rotate.cnt_ref = 170;
-					
-					if(fabs((double)(rotate.cnt_fdb-170))<15)
-					{			
-//						bullet_flag1=0;
-						bullet_step_front = TAKE_OFF_AND_OUT_MID;
-						handle_fetch_time=0;
-						handle_fetch_time2=0;
-						
-					}
-					else if(fabs((double)(rotate.cnt_fdb-170))<120)
-					{
-						slip.dist_ref = 992.6f;
-					}	
-				}
+			if(handle_fetch_time>70)
+			{
+				rotate.cnt_ref = 170;
 				
+				if(fabs((double)(rotate.cnt_fdb-170))<15)
+				{			
+//						bullet_flag1=0;
+					bullet_step_front = TAKE_OFF_AND_OUT_MID;
+					handle_fetch_time=0;
+					handle_fetch_time2=0;
+					
+				}
+				else if(fabs((double)(rotate.cnt_fdb-170))<120)
+				{
+					slip.dist_ref = 992.6f;
+				}	
 			}
+						
 		}break;
 		
 		case TAKE_OFF_AND_OUT_MID:
 		{
 			slip.dist_ref = 992.4f;
 			
-			if(bullet_flag1==1 && fabs((float)(slip.dist_fdb-992.6f))<15)
+			if(fabs((float)(slip.dist_fdb-992.6f))<15)
 			{
 				handle_fetch_time++;
 				pump.press_ctrl_mode = ON_MODE;
@@ -589,8 +574,6 @@ void get_bullet_front(void)
 		case ROT_OFF_FINAL:
 		{
 		
-			if(bullet_flag1)
-			{
 				handle_fetch_time++;
 				pump.press_ctrl_mode =OFF_MODE;
 				
@@ -615,7 +598,6 @@ void get_bullet_front(void)
 				}	
 			}
 				
-			}
 		
 		}break;
 		
@@ -624,33 +606,31 @@ void get_bullet_front(void)
 		
 			slip.dist_ref = 493.5f;
 			
-			if(bullet_flag1)
+			handle_fetch_time++;
+			pump.press_ctrl_mode = ON_MODE;
+			
+			if(handle_fetch_time>58)
 			{
-				handle_fetch_time++;
-				pump.press_ctrl_mode = ON_MODE;
+				pump.throw_ctrl_mode = ON_MODE;
+				rotate.cnt_ref = 500;		
 				
-				if(handle_fetch_time>58)
+				if(fabs((double)(rotate.cnt_fdb-500))<50)
 				{
-					pump.throw_ctrl_mode = ON_MODE;
-					rotate.cnt_ref = 500;		
-					
-					if(fabs((double)(rotate.cnt_fdb-500))<50)
-					{
-							handle_fetch_time2++;
-							
+						handle_fetch_time2++;
 						
-							if(handle_fetch_time2>60)
-							{
-								pump.throw_ctrl_mode = OFF_MODE;
-								rotate.cnt_ref = 200;
+					
+						if(handle_fetch_time2>60)
+						{
+							pump.throw_ctrl_mode = OFF_MODE;
+							rotate.cnt_ref = 200;
 //								bullet_flag1=0;
-								handle_fetch_time=0;
-								handle_fetch_time2=0;
-								bullet_step_front = BULLET_RESET_STEP;												
-							}			
-					}
+							handle_fetch_time=0;
+							handle_fetch_time2=0;
+							bullet_step_front = BULLET_RESET_STEP;												
+						}			
 				}
 			}
+			
 		}break;
 		
 		
@@ -663,8 +643,7 @@ void get_bullet_front(void)
 			pump.press_ctrl_mode = OFF_MODE;
 			pump.throw_ctrl_mode = OFF_MODE;
 
-			bullet_step_front = AIM_BULLET;
-			bullet_flag1=0;
+			bullet_step_front = VOID_HANDLE;
 			handle_fetch_time2=0;
 			handle_fetch_time=0;			
 			

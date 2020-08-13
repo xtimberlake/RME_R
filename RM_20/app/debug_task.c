@@ -21,6 +21,7 @@
 #include "slip_task.h"
 #include "uplift_task.h"
 #include "rotate_task.h"
+#include "remote_msg.h"
 
 //函数说明：MiniBalance上位机通过串口打印数据波形
 //附加说明：直接在主函数中调用此函数（注意延时减少打印量）
@@ -34,10 +35,9 @@ void DataWave(UART_HandleTypeDef* huart)
 //	  DataScope_Get_Channel_Data(rotate.cnt_ref, 2 );
 //		DataScope_Get_Channel_Data(-moto_rotate[0].speed_rpm, 3 ); 
 //	  DataScope_Get_Channel_Data(rotate.spd_ref, 4 ); 
-		DataScope_Get_Channel_Data(slip.dist_fdb, 1 );
-	  DataScope_Get_Channel_Data(slip.dist_ref, 2 );
-		DataScope_Get_Channel_Data(moto_slip.speed_rpm, 3 ); 
-	  DataScope_Get_Channel_Data(slip.spd_ref, 4 ); 
+		DataScope_Get_Channel_Data(rc.mouse.x, 1 );
+//		DataScope_Get_Channel_Data(moto_slip.speed_rpm, 3 ); 
+//	  DataScope_Get_Channel_Data(slip.spd_ref, 4 ); 
 
 		CK.Send_Count = DataScope_Data_Generate(4);//串口需要发送的数据个数
 	
