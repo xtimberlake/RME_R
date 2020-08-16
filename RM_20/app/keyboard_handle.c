@@ -22,7 +22,7 @@
 #include "remote_msg.h"
 #include "math_calcu.h"
 
-uint8_t single_bullet_postion = 0;
+uint8_t single_bullet_postion = 1;//单箱取弹位置标志位
 
 //单击标志位
 uint8_t one_click_G_flag = 1;
@@ -32,13 +32,25 @@ uint8_t one_click_single_pos_flag = 1;
 uint8_t one_click_help_flag = 1;
 uint8_t one_click_give_bullet = 1;
 
-uint8_t safety_0=0;
-uint8_t ready_play=0;
+//取弹计时标志位
 uint32_t handle_time=0;
 uint32_t handle_time2=0;
-
 uint32_t handle_times=0;
+
 static uint8_t step = 0;
+
+//图传云台视角定义
+#define PIT_ORIGIN	1480;
+#define YAW_ORIGIN	1150;
+#define PIT_LEFT		1000;
+#define YAW_LEFT		840;
+#define PIT_ORIGIN_UP		1350;
+#define PIT_ORIGIN_DOWN	900;
+//#define PIT_PWM_DOWN_LIMTI	800
+//#define PIT_PWM_UP_LIMIT 		1650
+//#define YAW_PWM_LEFT_LIMIT	2500
+//#define YAW_PWM_RIGHT_LIMIT 500
+//pwm值增大逆时针转 最左为500pwm，最右为2500
 
 ramp_function_source_t chassis_auto_ramp;
 
@@ -51,23 +63,26 @@ ramp_function_source_t chassis_auto_ramp;
 	*							
   */	
 void keyboard_handle()
-{
-	rotate.ctrl_mode = ROTATE_AUTO;
-	slip.ctrl_mode = SLIP_AUTO;
-	uplift.ctrl_mode = UPLIFT_AUTO;
+{	
+//	if(uplift.state!=UPLIFT_KNOWN||slip.state!=SLIP_KNOWN||rotate.state!=ROTATE_KNOWN)
+//	{return;}
 	
-	if(rc.kb.bit.R && func_mode!=MOVE_MODE)				{func_mode = MOVE_MODE;}
+	//模式选择
+	if(rc.kb.bit.R && func_mode!=MOVE_MODE)		{func_mode = MOVE_MODE;}
 	else if(rc.kb.bit.R)
 	{
-		pump.help_ctrl_mode = OFF_MODE;
-		pump.help_ctrl_mode = OFF_MODE;
-		electrical.magazine_ctrl_mode = OFF_MODE;
+		set_relay_all_off();
+
+		relay.view_tx.yaw		= PIT_ORIGIN;
+		relay.view_tx.pitch = YAW_ORIGIN;
+		slip.dist_ref = 493.6f;
+		rotate.cnt_ref = 200;		
 	}
-	bullet_ctrl_switch_fun();
+	bullet_mode_switch();//取弹模式选择
 	
 	keyboard_chassis_ctrl();//底盘速度控制
-		
-	
+	keyboard_sight_ctrl();//图传云台控制
+
 	switch (func_mode)
 	{
 		
@@ -80,8 +95,12 @@ void keyboard_handle()
 					if(pump.help_ctrl_mode == ON_MODE)
 					{
 						pump.help_ctrl_mode = OFF_MODE;
+						electrical.camera_ctrl_mode = OFF_MODE;
 					}else
-					{ pump.help_ctrl_mode = ON_MODE; }
+					{
+						pump.help_ctrl_mode = ON_MODE; 
+						electrical.camera_ctrl_mode = OFF_MODE;
+					}
 					one_click_help_flag = 0;
 				}	
 			}else {one_click_help_flag = 1;}
@@ -155,24 +174,14 @@ void safety_first()
 	pump.throw_ctrl_mode=OFF_MODE;
 }
 
-//
-void reset_all()
-{
-	
-}
-
-
-
-
 /**
   * @brief      键盘控制底盘函数
   * @param[in]  none
   * @retval     none
 	* @note				操作说明：
-								1、取弹时，鼠标按住右键进行贴紧资源岛，按键WS调整前后慢速移动
-								2、平常移动时，按住CTRL慢速移动、SHIFT快速移动
+	*							1、取弹时，鼠标按住右键进行贴紧资源岛，按键WS调整前后慢速移动
+	*							2、平常移动时，按住CTRL慢速移动、SHIFT快速移动
   */
-
 void keyboard_chassis_ctrl()
 {
 	if(func_mode == MOVE_MODE)
@@ -182,6 +191,30 @@ void keyboard_chassis_ctrl()
 		else												{	chassis_speed = SPEED_NORMAL; 					chassis.ctrl_mode = CHASSIS_KB;	}
 	}
 }
+
+/**
+  * @brief      云台视角控制函数
+  * @param[in]  none
+  * @retval     none
+	* @note				操作说明：
+	*							1、云台只有预设视角,无法线性调整
+	*							2、
+  */
+void keyboard_sight_ctrl()
+{
+	if(last_func_mode!=func_mode)
+	{
+		if(func_mode==GET_BULLET_SINGLE_MODE||func_mode==GET_BULLET_FRONT_MODE||func_mode==GET_BULLET_T_MODE||func_mode==GET_BULLET_last)
+		{
+			relay.view_tx.yaw		= PIT_LEFT;
+			relay.view_tx.pitch = YAW_LEFT;			
+		}else if(func_mode==MOVE_MODE)
+		{
+			relay.view_tx.yaw		= PIT_ORIGIN;
+			relay.view_tx.pitch = YAW_ORIGIN;
+		}
+	}
+}
 /**
   * @brief      比赛模式下取弹模式切换函数
   * @param[in]  none
@@ -189,7 +222,7 @@ void keyboard_chassis_ctrl()
 	* @note				1、取弹时，鼠标按住右键底盘进入取弹瞄准模式,默认为取单箱模式,按Z/X/C切换为前面三箱/T形/前后六箱模式
 	*							2、松开后，退出取弹模式，复位
   */
-void bullet_ctrl_switch_fun()
+void bullet_mode_switch()
 {
 	if(rc.mouse.r)
 	{
@@ -200,7 +233,7 @@ void bullet_ctrl_switch_fun()
 		}
 		if(rc.kb.bit.Z)					{	func_mode = GET_BULLET_FRONT_MODE;	}
 		else if(rc.kb.bit.X) 		{	func_mode = GET_BULLET_T_MODE;			}
-		else if (rc.kb.bit.C)		{	func_mode = GET_BULLET_TWO_MODE;		}											
+		else if (rc.kb.bit.C)		{	func_mode = GET_BULLET_last;				}											
 	} else	{ one_click_bullet_flag = 1; }
 }
 
@@ -253,6 +286,9 @@ void bullet_single_handle(void)
 		
 	}
 }
+
+
+
 
 /**
   * @brief      比赛模式下抬升和横移配合函数

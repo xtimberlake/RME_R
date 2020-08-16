@@ -26,7 +26,7 @@ void can_msg_send_task(void const *argu)
 	for(;;)
   {
 		event = osSignalWait(UPLIFT_MOTOR_MSG_SEND | \
-													SLIP_MOTOR_MSG_SEND|	\
+													SLIP_MOTOR_MSG_SEND|		\
 													CHASSIS_MOTOR_MSG_SEND|  \
 													ROTATE_MOTOR_MSG_SEND	, osWaitForever);
 		

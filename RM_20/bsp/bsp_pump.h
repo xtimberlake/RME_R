@@ -73,6 +73,7 @@ typedef struct
 } electrical_t;
 
 __BSP_PUMP_EXT void pump_init(void);
+__BSP_PUMP_EXT void set_relay_all_off(void);
 
 __BSP_PUMP_EXT void help_executed(void);
 __BSP_PUMP_EXT void press_executed(void);

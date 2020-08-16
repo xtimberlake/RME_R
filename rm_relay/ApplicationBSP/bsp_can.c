@@ -86,15 +86,11 @@ void send_cur(int16_t iq1, int16_t iq2, int16_t iq3, int16_t iq4)
 		while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan)==0)	//HAL_CAN_GetTxMailboxesFreeLevel(hcan);
 		{
 			count_overtime++;
-			if(count_overtime>5000)
-				break;
+			if(count_overtime>5000)	break;
 		}
 		HAL_RetVal=HAL_CAN_AddTxMessage(&hcan,&Tx1Message,CAN_Tx_data,(uint32_t*)tempCanTxdata2); 
 
-		if(HAL_RetVal!=HAL_OK)
-		{
-			return ;
-		}
+		if(HAL_RetVal!=HAL_OK)	{return ;}
 }
 
 

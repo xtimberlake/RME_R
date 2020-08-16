@@ -25,49 +25,10 @@
 
 #define I_have_a_remote 1
 
-
-extern osTimerId chassis_timer_id;
-extern osTimerId uplift_timer_id;
-extern osTimerId slip_timer_id;
-extern osTimerId rotate_timer_id;
-extern osTimerId judge_sendTimer_id;
-
-
-#define PIT_PWM_DOWN_LIMTI	800
-#define PIT_PWM_UP_LIMIT 		1650
-#define YAW_PWM_LEFT_LIMIT	2500
-#define YAW_PWM_RIGHT_LIMIT 500
-
-#define PIT_PWM_MID	1170
-#define PIT_PWM_LCD 1350
-#define YAW_PWM_LCD 2117
-#define YAW_PWM_MID 856
-
-#define PIT_PWM_HELP 1563
-#define YAW_PWM_HELP 835
-
 float chassis_speed; //底盘速度选择 此定义在斜坡函数中会再次用到
 
-int speed_normal=4000;
-int speed_fast =8000;
-int speed_slow =2000;
-
-float servo_pit_pwm=1170;
-float servo_yaw_pwm=2080;
-//servo_yaw_pwm pwm值增大逆时针转 最左为500pwm，最右为2500
-
-uint8_t rc_kb_X_flag=0;
-uint8_t rc_kb_R_flag=0;
-uint8_t rc_ch4_flag=0;
-
-
-#define MOUSE_SPEED_SLOW		50
-#define MOUSE_SPEED_NORMAL	100
-#define MOUSE_SPEED_FAST		150
-
-uint32_t handle_cnt=0,ready_step_flag=0;
-
-uint32_t handle_fetch_time=0,handle_fetch_time2=0;
+uint32_t handle_fetch_time=0;
+uint32_t handle_fetch_time2=0;
 
 void mode_switch_task(void const *argu)
 {
@@ -100,7 +61,7 @@ void get_main_ctrl_mode(void)
 				case RC_UP:
 				{			
 					//遥控底盘行走模式
-//					glb_ctrl_mode = RC_MOVE_MODE;
+					glb_ctrl_mode = RC_MOVE_MODE;
 					rc_move_handle();
 				}break;
 				
@@ -120,7 +81,7 @@ void get_main_ctrl_mode(void)
 				
 				case RC_DN:
 				{
-//					//调试模式/初始化全部
+//				//调试模式/初始化全部
 					
 					slip.state = SLIP_KNOWN;
 					slip.ctrl_mode = SLIP_AUTO;
@@ -147,9 +108,14 @@ void get_main_ctrl_mode(void)
 		
 		case RC_DN:
 		{
-		//键盘模式
-			glb_ctrl_mode = KB_MODE;
-			
+			//键盘模式
+			glb_ctrl_mode = KB_MODE;	
+			if(last_glb_ctrl_mode != KB_MODE)
+			{
+				rotate.ctrl_mode = ROTATE_AUTO;
+				slip.ctrl_mode = SLIP_AUTO;
+				uplift.ctrl_mode = UPLIFT_AUTO;
+			}
 			keyboard_handle();
 		}break;
 		
@@ -164,6 +130,11 @@ void get_main_ctrl_mode(void)
 	#endif
 }
 
+void get_global_last_mode(void)
+{
+	last_glb_ctrl_mode = glb_ctrl_mode;
+	last_func_mode = func_mode;
+}
 
 //遥控底盘移动模式下对遥控器的操作处理，对各个机构切换状态
 void rc_move_handle(void)
@@ -171,7 +142,6 @@ void rc_move_handle(void)
 	slip.ctrl_mode = SLIP_ADJUST;   					//横移电机可微调
 	uplift.ctrl_mode = UPLIFT_ADJUST;					//抬升机构可微调，ch5
 	
-	uplift.ctrl_mode = UPLIFT_ADJUST;
 	chassis.ctrl_mode = CHASSIS_REMOTE_NORMAL;//底盘正常速度行走模式ch1.ch2,ch3
 	
 //	//给弹
@@ -203,7 +173,6 @@ void safety_mode_handle(void)
 	rotate.ctrl_mode = ROTATE_STOP;
 }
 
-
 void rc_bullet_handle(void)
 {	
 	static uint8_t rc5_flag ;
@@ -229,95 +198,6 @@ void rc_bullet_handle(void)
 	}
 }
 
-
-
-//键盘模式下的操作处理，对各个机构切换状态
-void kb_handle(void)
-{
-	float mouse_speed;
-	
-	//uplift.ctrl_mode = UPLIFT_AUTO;
-	uplift.ctrl_mode = UPLIFT_ADJUST; //抬升暂时未调试
-	chassis.ctrl_mode = CHASSIS_KB;	
-
-	if(rc.mouse.l)		//	视角	r正常 shift r取弹 ctrl r 登岛
-	{
-		//两轴云台归中
-		if(rc.kb.bit.SHIFT)
-		{
-			servo_pit_pwm = PIT_PWM_LCD;
-			servo_yaw_pwm = YAW_PWM_LCD;
-			electrical.camera_ctrl_mode = OFF_MODE;
-			camera_mode = CAMERA_BULLET_MODE;
-			camera_flag = -1;
-		}
-		else if(rc.kb.bit.CTRL)
-		{
-			servo_pit_pwm = PIT_PWM_LCD;
-			servo_yaw_pwm = YAW_PWM_LCD;
-			electrical.camera_ctrl_mode = ON_MODE;
-//			camera_mode = CAMERA_CLIMB_MODE;
-			camera_flag = -1;
-		}
-		else
-		{
-			servo_pit_pwm = PIT_PWM_MID;
-			servo_yaw_pwm = YAW_PWM_MID;
-			camera_mode = CAMERA_NORMAL_MODE;
-			camera_flag = 1;
-		}
-	}	
-	if(rc.mouse.r) //未调试过
-	{
-			//启动挪动鼠标移动云台操作
-			relay.view_tx.yaw 	-= 0.5*rc.mouse.x;
-			relay.view_tx.pitch	-= 0.3*rc.mouse.y;
-			if(relay.view_tx.yaw > 2200) relay.view_tx.yaw = 2200;
-		  if(relay.view_tx.yaw < 850) relay.view_tx.yaw = 850;
-			if(relay.view_tx.pitch > 1600) relay.view_tx.pitch = 1600;
-		  if(relay.view_tx.pitch < 800) relay.view_tx.pitch = 800;
-			//HAL_GPIO_TogglePin(LED_A_GPIO_Port,LED_A_Pin);g
-	}
-	else if(rc.kb.bit.G)
-	{
-			relay.view_tx.yaw 	= 1480;
-			relay.view_tx.pitch	= 1150;
-		
-		//图传初始状态
-	}
-
-
-	if(rc.kb.bit.CTRL)	{chassis_speed = 1800; mouse_speed = MOUSE_SPEED_SLOW;}
-	else if(rc.kb.bit.SHIFT)	{chassis_speed = 8200; mouse_speed = MOUSE_SPEED_FAST;}
-	else 								{chassis_speed = 3800; mouse_speed = MOUSE_SPEED_NORMAL;}
-
-	
-//	if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
-//	else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
-
-	if(rc.kb.bit.Z)	//各种复位		z
-	{
-//		bullet.ctrl_mode = BULLET_RESET;
-	}
-	if(rc.kb.bit.X&&rc_kb_X_flag==0)	//取弹下一步   x
-	{
-		rc_kb_X_flag = 1;
-//		if(rc.sw2==RC_UP)func_mode = GET_BULLET1_MODE;
-//		else if(rc.sw2==RC_MI)func_mode = GET_BULLET2_MODE;
-//		if(rc.kb.bit.SHIFT)	func_mode = GET_BULLET2_MODE;
-//		else func_mode = GET_BULLET1_MODE;
-	}
-	if(rc.kb.bit.X==0&&rc_kb_X_flag)
-	{
-		rc_kb_X_flag = 0;
-	}
-}
-
-void get_global_last_mode(void)
-{
-	last_glb_ctrl_mode = glb_ctrl_mode;
-	last_func_mode = func_mode;
-}
 
 /**
   * @brief  自动取一箱子弹
@@ -393,7 +273,7 @@ void get_bullet_single(void)
 		
 		case BULLET_RESET_STEP:
 		{
-			rotate.cnt_ref = 400;	
+			rotate.cnt_ref = 600;	
 			handle_fetch_time=0;
 			pump.throw_ctrl_mode = OFF_MODE;
 			pump.press_ctrl_mode = OFF_MODE;
@@ -454,7 +334,6 @@ void get_bullet_front(void)
 			
 			if(fabs((double)(rotate.cnt_fdb-1000))<40)
 			{
-//					bullet_flag1=0;
 				bullet_step_front = ROT_OFF_LEFT;
 				handle_fetch_time=0;
 			}
@@ -473,7 +352,6 @@ void get_bullet_front(void)
 				
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{
-//						bullet_flag1=0;
 					bullet_step_front = TAKE_OFF_AND_OUT;
 					handle_fetch_time=0;
 				}
@@ -504,7 +382,6 @@ void get_bullet_front(void)
 					{			
 						handle_fetch_time2=0;
 						handle_fetch_time=0;
-//						bullet_flag1=0;
 						bullet_step_front = ROT_OFF_MID;
 						
 					}			
@@ -528,7 +405,6 @@ void get_bullet_front(void)
 				
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{			
-//						bullet_flag1=0;
 					bullet_step_front = TAKE_OFF_AND_OUT_MID;
 					handle_fetch_time=0;
 					handle_fetch_time2=0;
@@ -561,7 +437,6 @@ void get_bullet_front(void)
 					{					
 						handle_fetch_time2=0;
 						handle_fetch_time=0;
-//						bullet_flag1=0;
 						bullet_step_front = ROT_OFF_FINAL;	
 						
 					}
@@ -586,7 +461,6 @@ void get_bullet_front(void)
 					
 				if(fabs((double)(rotate.cnt_fdb-170))<15)
 				{
-//					bullet_flag1=0;
 					bullet_step_front = TAKE_OFF_FINAL;
 					handle_fetch_time=0;
 					handle_fetch_time2=0;
@@ -623,7 +497,6 @@ void get_bullet_front(void)
 						{
 							pump.throw_ctrl_mode = OFF_MODE;
 							rotate.cnt_ref = 200;
-//								bullet_flag1=0;
 							handle_fetch_time=0;
 							handle_fetch_time2=0;
 							bullet_step_front = BULLET_RESET_STEP;												
@@ -636,9 +509,9 @@ void get_bullet_front(void)
 		
 		case BULLET_RESET_STEP:
 		{
-			uplift.ctrl_mode = UPLIFT_STOP;
-			slip.ctrl_mode = SLIP_STOP;
-			rotate.ctrl_mode = ROTATE_STOP;
+//			uplift.ctrl_mode = UPLIFT_STOP;
+//			slip.ctrl_mode = SLIP_STOP;
+//			rotate.ctrl_mode = ROTATE_STOP;
 			
 			pump.press_ctrl_mode = OFF_MODE;
 			pump.throw_ctrl_mode = OFF_MODE;

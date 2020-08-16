@@ -33,27 +33,20 @@ typedef enum
 }fetch_step_e;
 
 
-typedef enum
-{
-	CONTINUE,
-	SUCCE,
-}bullet_status_e;
 
 
 __KEYBOARD_HANDLE_EXT fetch_step_e fetch_step;
-__KEYBOARD_HANDLE_EXT bullet_status_e bullet_status;
-
 
 
 void keyboard_handle(void);
-void mode_crtl_handle(void);
 
+void bullet_mode_switch(void);
 
-void debug_slip(void);
-void keyborad_bullet_handle(void);
-void bullet_ctrl_switch_fun(void);
-void bullet_single_handle(void);
 void keyboard_chassis_ctrl(void);
+void keyboard_sight_ctrl(void);
+void bullet_single_handle(void);
+
+
 void keyboard_uplift_ctrl(void);
 void reset_bullet(void);
 void single_fetch_bullet(void);

@@ -21,6 +21,7 @@
 
 #define INFO_GET_PERIOD 5
 
+
 //工程整机模式
 typedef enum
 {
@@ -38,7 +39,7 @@ typedef enum
 	GET_BULLET_SINGLE_MODE,	//取单箱
   GET_BULLET_FRONT_MODE,	//取前面三箱
 	GET_BULLET_T_MODE,			//取T形四箱
-	GET_BULLET_TWO_MODE,		//取前后六箱
+	GET_BULLET_last,				//取后升起的两箱
 	GIVE_BULLET_MODE,
 } func_mode_e;
 
@@ -87,9 +88,9 @@ __MODESW_TASK_EXT bullet_step_e		bullet_step_single;
 
 __MODESW_TASK_EXT engineer_mode_e glb_ctrl_mode;
 __MODESW_TASK_EXT engineer_mode_e last_glb_ctrl_mode;
-
 __MODESW_TASK_EXT func_mode_e func_mode;
 __MODESW_TASK_EXT func_mode_e last_func_mode;
+
 __MODESW_TASK_EXT camera_mode_e camera_mode;
 
 __MODESW_TASK_EXT int camera_flag;	//决定lcd显示视角
@@ -98,12 +99,12 @@ void mode_switch_task(void const *argu);
 
 void get_main_ctrl_mode(void);
 void get_global_last_mode(void);
+
 void rc_move_handle(void);
 void rc_bullet_handle(void);
 void safety_mode_handle(void);
-void kb_handle(void);
 
-void get_bullet_front(void);	//取前面三箱
 void get_bullet_single(void);	//自动取一箱
+void get_bullet_front(void);	//取前面三箱
 
 #endif

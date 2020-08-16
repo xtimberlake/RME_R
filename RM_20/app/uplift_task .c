@@ -26,14 +26,14 @@ extern TaskHandle_t can_msg_send_task_t;
 
 void uplift_init()
 {
-		//抬升的PID  机械有问题,老板说这个有点难,但是他通个宵就能调好
+		//抬升的PID 未调完
 		PID_struct_init(&pid_uplift_spd[0], POSITION_PID, 15000, 3000,
 									10.0f,	0.0f,	0.0f	);  
 		PID_struct_init(&pid_uplift_spd[1], POSITION_PID, 15000, 3000,
 									10.0f,	0.0f,	0.0f	);  
-		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 2800, 500,
+		PID_struct_init(&pid_uplift_height[0], POSITION_PID, 1500, 500,
 									800.0f,	0.0f,	0.0f	);  
-		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 2800, 500,
+		PID_struct_init(&pid_uplift_height[1], POSITION_PID, 1500, 500,
 									800.0f,	0.0f,	0.0f	);  
 	
 	
@@ -42,9 +42,6 @@ void uplift_init()
 	//初始化两个高度反馈
 	
 	uplift.height_get_bullet_REF = HEIGHT_GET;//取弹高度
-	uplift.height_give_hero_REF  = 0;					//给弹高度
-	uplift.calibra_flag1=1;				//初始化标志位
-	uplift.calibra_flag2=1;
 	uplift.height_offset[0] = 0;	//高度补偿值
 	uplift.height_offset[1] = 0;
 }
@@ -91,9 +88,9 @@ void uplift_task(void const *argu)
 				uplift.height_ref[0] -= 0.001*rc.ch5; 
 				uplift.height_ref[1] =  -uplift.height_ref[0];
 				
-//				//设置上下限
-				if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;
-				if(uplift.height_ref[1]>=HEIGHT_DOWN_LIMIT)	uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
+				//设置上下限
+//				if(uplift.height_ref[0]<=HEIGHT_DOWN_LIMIT)	uplift.height_ref[0] = HEIGHT_DOWN_LIMIT;
+//				if(uplift.height_ref[1]>=HEIGHT_DOWN_LIMIT)	uplift.height_ref[1] = HEIGHT_DOWN_LIMIT;
 //				if(uplift.height_ref[0]>=HEIGHT_UP_LIMIT)	uplift.height_ref[0] = HEIGHT_UP_LIMIT;
 //				if(uplift.height_ref[1]>=HEIGHT_UP_LIMIT)	uplift.height_ref[1] = HEIGHT_UP_LIMIT;
 				

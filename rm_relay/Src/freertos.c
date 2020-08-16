@@ -57,7 +57,7 @@ osTimerId	rotate_timer_id;
 osThreadId defaultTaskHandle;
 osThreadId gas_task_idHandle;
 osThreadId view_task_idHandle;
-osThreadId relay_commun_taHandle;
+osThreadId relay_commun_idHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -115,9 +115,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(view_task_id, view_task, osPriorityNormal, 0, 256);
   view_task_idHandle = osThreadCreate(osThread(view_task_id), NULL);
 
-  /* definition and creation of relay_commun_ta */
-  osThreadDef(relay_commun_ta, relay_commun_task, osPriorityNormal, 0, 128);
-  relay_commun_taHandle = osThreadCreate(osThread(relay_commun_ta), NULL);
+  /* definition and creation of relay_commun_id */
+  osThreadDef(relay_commun_id, relay_commun_task, osPriorityNormal, 0, 128);
+  relay_commun_idHandle = osThreadCreate(osThread(relay_commun_id), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -135,12 +135,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-    
-    
-    
-    
-    
-
   /* USER CODE BEGIN StartDefaultTask */
 //		osTimerStart(rotate_timer_id,ROTATE_PERIOD);
   /* Infinite loop */

@@ -102,7 +102,7 @@ void chassis_task(void const *argu)
 			//chassis.vw = pid_calc(&pid_chassis_near_w,(float)relay.dis1-(float)relay.dis2,0);//调平齐
 		}break;		
 		
-		case CHASSIS_KB_NEAR: //激光测距方案贴资源岛行走
+		case CHASSIS_KB_NEAR: //激光测距方案贴资源岛行走(此时图传视角改变,注意逻辑)
 		{
 			chassis_ramp();
 			chassis.vx = -pid_calc(&pid_chassis_near_x,(float)relay.dis1+(float)relay.dis2,chassis.dis_ref);//调距离

@@ -26,7 +26,6 @@
 #define HEIGHT_GET					1.0f		//取弹高度
 #define HEIGHT_GET_2				1.0f		//取第二排弹高度
 #define HEIGHT_GET_PULL			1.0f		//取弹提升后高度
-#define HEIGHT_GIVE					1.1f		//传输子弹的高度.
 
 typedef enum
 {

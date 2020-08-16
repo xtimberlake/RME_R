@@ -84,19 +84,7 @@ void relay_safe_executed()
 void pump_init()
 {
 	//程序初始化完成后发送接受气阀信息标志位
-	
-	pump.help_ctrl_mode = OFF_MODE;
-	pump.press_ctrl_mode = OFF_MODE;
-	pump.throw_ctrl_mode = OFF_MODE;
-	pump.bracket_ctrl_mode = OFF_MODE;
-	pump.bullet1_ctrl_mode = OFF_MODE;
-	pump.bullet2_ctrl_mode = OFF_MODE;
-//	pump.interact_ctrl_mode = OFF_MODE;
-	
-	electrical.camera_ctrl_mode = OFF_MODE;
-	electrical.magazine_ctrl_mode = OFF_MODE;
-	
-	electrical.safe_mode = OFF_MODE;
+	set_relay_all_off();
 	
 	help_executed();
 	press_executed();
@@ -119,4 +107,17 @@ void pump_init()
 	
 }
 
-
+void set_relay_all_off()
+{
+	pump.help_ctrl_mode = OFF_MODE;
+	pump.press_ctrl_mode = OFF_MODE;
+	pump.throw_ctrl_mode = OFF_MODE;
+	pump.bracket_ctrl_mode = OFF_MODE;
+	pump.bullet1_ctrl_mode = OFF_MODE;
+	pump.bullet2_ctrl_mode = OFF_MODE;
+	
+	electrical.camera_ctrl_mode = OFF_MODE;
+	electrical.magazine_ctrl_mode = OFF_MODE;
+	
+	electrical.safe_mode = OFF_MODE;
+}
