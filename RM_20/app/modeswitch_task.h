@@ -64,7 +64,6 @@ typedef enum
 	
 	
 	//ÈýÏä
-	LEFT_POS,
 	ROT_OUT_LEFT,
 	ROT_OFF_LEFT,
 	

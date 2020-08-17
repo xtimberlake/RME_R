@@ -16,11 +16,13 @@
 //#include "cmsis_os.h"
 
 
-void abs_limit(float *a, float ABS_MAX,float offset){
-    if(*a > ABS_MAX+offset)
-        *a = ABS_MAX+offset;
-    if(*a < -ABS_MAX+offset)
-        *a = -ABS_MAX+offset;}
+void abs_limit(float *a, float ABS_MAX,float offset)
+{
+	if(*a > ABS_MAX+offset)
+			*a = ABS_MAX+offset;
+	if(*a < -ABS_MAX+offset)
+			*a = -ABS_MAX+offset;
+}
 
 
 /**

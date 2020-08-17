@@ -1,13 +1,3 @@
-/** 
-  * @file modeswitch_task.c
-  * @version 1.0
-  * @date Nar,1 2018
-	*
-  * @brief  模式选择任务文件
-	*
-  *	@author li zh
-  *
-  */
 #define __MODESW_TASK_GLOBALS
 #include "modeswitch_task.h"
 #include "chassis_task.h"
@@ -91,7 +81,7 @@ void get_main_ctrl_mode(void)
 
 					chassis.ctrl_mode = CHASSIS_STAY;
 //					chassis_speed = SPEED_NORMAL;
-//					chassis.ctrl_mode = CHASSIS_KB;					
+//					chassis.ctrl_mode = CHASSIS_KB;	
 				}break;
 			}
 			
@@ -244,7 +234,7 @@ void get_bullet_single(void)
 			{
 				rotate.cnt_ref = 170;
 				
-				if(fabs((double)(rotate.cnt_fdb-170))<15)
+				if(fabs((double)(rotate.cnt_fdb-170))<15 )
 				{
 					bullet_step_single = TAKE_OFF;
 					handle_fetch_time=0;
@@ -257,15 +247,16 @@ void get_bullet_single(void)
 			handle_fetch_time++;
 			pump.press_ctrl_mode = ON_MODE;
 				
-			if(handle_fetch_time>58)
+			if(handle_fetch_time>60)
 			{
 				pump.throw_ctrl_mode = ON_MODE;
-				rotate.cnt_ref = 400;				
+				rotate.cnt_ref = 600;				
 					
-				if(fabs((float)(rotate.cnt_fdb-400))<40)
+				if(fabs((float)(rotate.cnt_fdb-600))<10 && handle_fetch_time>200)
 				{	
 					handle_fetch_time=0;
-					bullet_step_single = BULLET_RESET_STEP;					
+					bullet_step_single = BULLET_RESET_STEP;	
+					
 				}			
 			}	
 			
@@ -296,36 +287,15 @@ void get_bullet_front(void)
 	switch(bullet_step_front)
 	{
 		case AIM_BULLET:
-		{			
+		{
+//			chassis.ctrl_mode = CHASSIS_RC_NEAR;//激光贴墙对位
+			chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;
 			slip.dist_ref = 5.2f;
 			rotate.cnt_ref = 600;
 			
 			if(fabs((float)(rotate.cnt_ref-600.0f))<40)
-			{pump.press_ctrl_mode = ON_MODE;}
-//			chassis.ctrl_mode = CHASSIS_RC_NEAR;//激光贴墙对位
-			chassis.ctrl_mode = CHASSIS_REMOTE_SLOW;
-			
+			{pump.press_ctrl_mode = ON_MODE;}		
 		}break;
-		
-//		case LEFT_POS:
-//		{
-
-//			chassis.ctrl_mode = CHASSIS_STAY;
-////			rotate.cnt_ref = 600;
-//			
-//			if(fabs((float)(slip.dist_fdb-5.2f))<10)
-//			{
-////					bullet_flag1=0;
-//				bullet_step_front = ROT_OUT_LEFT;
-//				pump.press_ctrl_mode = ON_MODE;
-//						
-//			}
-//			else if(fabs((double)(slip.dist_fdb))<420)
-//			{
-//				pump.press_ctrl_mode = ON_MODE;
-//			}
-//				
-//		}break;
 		
 		case ROT_OUT_LEFT:
 		{
@@ -486,9 +456,9 @@ void get_bullet_front(void)
 			if(handle_fetch_time>58)
 			{
 				pump.throw_ctrl_mode = ON_MODE;
-				rotate.cnt_ref = 500;		
+				rotate.cnt_ref = 600;		
 				
-				if(fabs((double)(rotate.cnt_fdb-500))<50)
+				if(fabs((double)(rotate.cnt_fdb-600))<50)
 				{
 						handle_fetch_time2++;
 						
@@ -496,7 +466,7 @@ void get_bullet_front(void)
 						if(handle_fetch_time2>60)
 						{
 							pump.throw_ctrl_mode = OFF_MODE;
-							rotate.cnt_ref = 200;
+							rotate.cnt_ref = 600;
 							handle_fetch_time=0;
 							handle_fetch_time2=0;
 							bullet_step_front = BULLET_RESET_STEP;												

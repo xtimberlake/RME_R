@@ -23,6 +23,7 @@
 #include "math_calcu.h"
 
 uint8_t single_bullet_postion = 1;//单箱取弹位置标志位
+uint8_t sight_pit_postion = 1;//图传视角标志位
 
 //单击标志位
 uint8_t one_click_G_flag = 1;
@@ -31,6 +32,7 @@ uint8_t one_click_bullet_flag = 1;
 uint8_t one_click_single_pos_flag = 1;
 uint8_t one_click_help_flag = 1;
 uint8_t one_click_give_bullet = 1;
+uint8_t	one_click_sight_flag = 1;
 
 //取弹计时标志位
 uint32_t handle_time=0;
@@ -40,10 +42,10 @@ uint32_t handle_times=0;
 static uint8_t step = 0;
 
 //图传云台视角定义
-#define PIT_ORIGIN	1480;
-#define YAW_ORIGIN	1150;
-#define PIT_LEFT		1000;
+#define YAW_ORIGIN	1480;
+#define PIT_ORIGIN	1150;
 #define YAW_LEFT		840;
+#define PIT_LEFT		1000;
 #define PIT_ORIGIN_UP		1350;
 #define PIT_ORIGIN_DOWN	900;
 //#define PIT_PWM_DOWN_LIMTI	800
@@ -73,8 +75,9 @@ void keyboard_handle()
 	{
 		set_relay_all_off();
 
-		relay.view_tx.yaw		= PIT_ORIGIN;
-		relay.view_tx.pitch = YAW_ORIGIN;
+		relay.view_tx.yaw		= YAW_ORIGIN;
+		relay.view_tx.pitch = PIT_ORIGIN;
+		sight_pit_postion = 1;
 		slip.dist_ref = 493.6f;
 		rotate.cnt_ref = 200;		
 	}
@@ -86,6 +89,7 @@ void keyboard_handle()
 	switch (func_mode)
 	{
 		
+		//移动模式
 		case(MOVE_MODE):
 		{
 			if(rc.kb.bit.V)//按v切换救援夹子状态
@@ -116,6 +120,7 @@ void keyboard_handle()
 			}
 		}break;
 		
+		//取单箱
 		case(GET_BULLET_SINGLE_MODE):
  		{
 			bullet_single_handle();
@@ -128,6 +133,7 @@ void keyboard_handle()
 			get_bullet_single();
 		}break;
 		
+		//取前面三箱
 		case(GET_BULLET_FRONT_MODE):
 		{
 			
@@ -198,7 +204,7 @@ void keyboard_chassis_ctrl()
   * @retval     none
 	* @note				操作说明：
 	*							1、云台只有预设视角,无法线性调整
-	*							2、
+	*							2、如果视角朝前,当rc.mouse.y大于阈值,图传pit轴改变
   */
 void keyboard_sight_ctrl()
 {
@@ -206,12 +212,39 @@ void keyboard_sight_ctrl()
 	{
 		if(func_mode==GET_BULLET_SINGLE_MODE||func_mode==GET_BULLET_FRONT_MODE||func_mode==GET_BULLET_T_MODE||func_mode==GET_BULLET_last)
 		{
-			relay.view_tx.yaw		= PIT_LEFT;
-			relay.view_tx.pitch = YAW_LEFT;			
+			relay.view_tx.yaw		= YAW_LEFT;
+			relay.view_tx.pitch = PIT_LEFT;	
 		}else if(func_mode==MOVE_MODE)
 		{
-			relay.view_tx.yaw		= PIT_ORIGIN;
-			relay.view_tx.pitch = YAW_ORIGIN;
+			relay.view_tx.yaw		= YAW_ORIGIN;
+			relay.view_tx.pitch = PIT_ORIGIN;
+			sight_pit_postion = 1;
+		}
+	}
+	
+	if(func_mode==MOVE_MODE)
+	{
+		if(rc.mouse.l && rc.mouse.y>5 && sight_pit_postion>0)
+		{
+			if(one_click_sight_flag)
+			{
+				sight_pit_postion-=1;
+				one_click_sight_flag = 0;
+			}
+		}else if(rc.mouse.l && rc.mouse.y<-5 && sight_pit_postion<2) 
+		{
+			if(one_click_sight_flag)
+			{
+				sight_pit_postion+=1;
+				one_click_sight_flag = 0;
+			}
+		}else {one_click_sight_flag = 1;}
+
+		switch (sight_pit_postion)
+		{
+			case 0: {	relay.view_tx.pitch = PIT_ORIGIN_DOWN;	}break;
+			case 1: {	relay.view_tx.pitch = PIT_ORIGIN;				}break;
+			case 2: {	relay.view_tx.pitch = PIT_ORIGIN_UP;		}break;
 		}
 	}
 }
@@ -219,8 +252,7 @@ void keyboard_sight_ctrl()
   * @brief      比赛模式下取弹模式切换函数
   * @param[in]  none
   * @retval     none
-	* @note				1、取弹时，鼠标按住右键底盘进入取弹瞄准模式,默认为取单箱模式,按Z/X/C切换为前面三箱/T形/前后六箱模式
-	*							2、松开后，退出取弹模式，复位
+	* @note				取弹时，鼠标按住右键底盘进入取弹瞄准模式,默认为取单箱模式,按Z/X/C切换为前面三箱/T形/最后剩下的两箱
   */
 void bullet_mode_switch()
 {
